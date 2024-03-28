@@ -1,1 +1,3 @@
-spring.application.name=hipartsuz
+spring:
+  application:
+    name: hipartsuz
