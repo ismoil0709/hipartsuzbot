@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,16 +30,24 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotNull
     @ManyToMany
+    @ToString.Exclude
     private List<Product> products;
+    @NotNull
     @ManyToOne
     private User user;
+    @NotNull
     private OrderType orderType;
     private String branch;
     private String address;
     private Double lat;
     private Double lon;
+    @NotNull
     private Double totalPrice;
-    private LocalDateTime orderTime;
+    @NotNull
+    private LocalDateTime time;
+    @NotNull
     private PaymentType paymentType;
+    private boolean active;
 }
