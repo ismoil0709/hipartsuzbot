@@ -29,4 +29,5 @@ public class Product {
     @ManyToOne
     private Category category;
     private Double discount;
+    private boolean isActive;
 }
