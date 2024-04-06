@@ -22,9 +22,6 @@ public interface OrderService {
     OrderDto getById(Long id);
 
     List<OrderDto> getAll();
-
-    List<OrderDto> findByProduct(Product product);
-
     List<OrderDto> findByUser(User user);
 
     List<OrderDto> findByBranch(String branch);
@@ -44,10 +41,4 @@ public interface OrderService {
     List<OrderDto> findByTotalPriceBetween(Double minPrice, Double maxPrice);
 
     List<OrderDto> findActiveByPaymentType(boolean active, PaymentType paymentType);
-
-    Long count();
-
-    Long countByProduct(Product product);
-
-    Long countByUser(User user);
 }

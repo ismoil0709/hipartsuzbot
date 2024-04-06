@@ -78,16 +78,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public List<OrderDto> findByProduct(Product product) {
-        List<Product> productList = Collections.singletonList(product);
-        List<Order> orders = orderRepository.findByProducts(productList);
-        return orders.stream()
-                .map(OrderDto::new)
-                .collect(Collectors.toList());
-    }
-
     @Override
     public List<OrderDto> findByUser(User user) {
         List<Order> orders = orderRepository.findByUser(user);
@@ -185,20 +175,5 @@ public class OrderServiceImpl implements OrderService {
         return orders.stream()
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Long count() {
-        return orderRepository.count();
-    }
-
-    @Override
-    public Long countByProduct(Product product) {
-        return orderRepository.countByProduct(product);
-    }
-
-    @Override
-    public Long countByUser(User user) {
-        return orderRepository.countByUser(user);
     }
 }

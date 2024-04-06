@@ -15,32 +15,14 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-
-    List<Order> findByProducts(List<Product> products);
-
     List<Order> findByOrderType(OrderType orderType);
-
     List<Order> findByUser(User user);
-
     List<Order> findByBranch(String branch);
-
     List<Order> findByAddress(String address);
-
     List<Order> findByPaymentType(PaymentType paymentType);
-
     List<Order> findByTotalPriceBetween(Double minPrice, Double maxPrice);
-
     List<Order> findByTimeBetween(LocalDateTime startDate, LocalDateTime endDate);
-
     List<Order> findByActive(boolean active);
-
     List<Order> findByActiveAndOrderType(boolean active, OrderType orderType);
-
     List<Order> findByActiveAndPaymentType(boolean active, PaymentType paymentType);
-
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.products = :product")
-    Long countByProduct(@Param("product") Product product);
-
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.user = :user")
-    Long countByUser(@Param("user") User user);
 }

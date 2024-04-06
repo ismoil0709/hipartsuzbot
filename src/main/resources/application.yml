@@ -1,3 +1,12 @@
 spring:
   application:
     name: hipartsuz
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/hipartsuz
+    username: postgres
+    password: ismoil_0709
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
