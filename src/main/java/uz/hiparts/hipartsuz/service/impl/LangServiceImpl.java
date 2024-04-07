@@ -17,6 +17,10 @@ public class LangServiceImpl implements LangService {
 
     @Override
     public String getMessage(LangFields keyword, Long chatId) {
-        return messageSource.getMessage(keyword.name(),null,new Locale(telegramUserService.getLang(chatId)));
+        try {
+            return messageSource.getMessage(keyword.name(),null,new Locale(telegramUserService.getLang(chatId)));
+        }catch (Exception e){
+            return messageSource.getMessage(keyword.name(),null,new Locale("uz"));
+        }
     }
 }
