@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
-
     @Override
     public void create(Order order) {
         if (order.getId() != null) {
@@ -34,7 +33,6 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.save(order);
     }
-
     @Override
     public Order update(Order order) {
         Order existingOrder = orderRepository.findById(order.getId())
@@ -56,7 +54,6 @@ public class OrderServiceImpl implements OrderService {
 
         return orderRepository.save(updatedOrder);
     }
-
     @Override
     public void delete(Long id) {
         if (!orderRepository.existsById(id))
@@ -64,13 +61,11 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.deleteById(id);
     }
-
     @Override
     public OrderDto getById(Long id) {
         return new OrderDto(orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order")));
     }
-
     @Override
     public List<OrderDto> getAll() {
         List<Order> orders = orderRepository.findAll();
@@ -107,7 +102,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<OrderDto> findActive(boolean active) {
         List<Order> orders = orderRepository.findByActive(active);
@@ -115,7 +109,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<OrderDto> findByOrderType(OrderType orderType) {
         List<Order> orders = orderRepository.findByOrderType(orderType);
@@ -123,7 +116,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<OrderDto> findActiveByOrderType(boolean active, OrderType orderType) {
         List<Order> orders = orderRepository.findByActiveAndOrderType(active, orderType);

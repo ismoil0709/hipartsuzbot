@@ -10,6 +10,8 @@ import uz.hiparts.hipartsuz.repository.ProductRepository;
 import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.util.Validations;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {

@@ -8,18 +8,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import uz.hiparts.hipartsuz.dto.AddToBasketDto;
 import uz.hiparts.hipartsuz.dto.OrderDto;
+import uz.hiparts.hipartsuz.model.TelegramUser;
+import uz.hiparts.hipartsuz.service.telegramService.TelegramService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class TelegramController {
+    private final TelegramService telegramService;
     @PostMapping("/telegram")
     public void getUpdates(@RequestBody Update update){
-    }
-    @PostMapping("/basket")
-    public void addToBasket(@RequestBody AddToBasketDto addToBasketDto){
-    }
-    @PostMapping("/order")
-    public void order(@RequestBody OrderDto orderDto){
+        if(update.hasMessage()){
+            telegramService.handleMessage(update.getMessage());
+        }else if (update.hasCallbackQuery()){
+            telegramService.handleCallbackQuery(update.getCallbackQuery());
+        }
     }
 }

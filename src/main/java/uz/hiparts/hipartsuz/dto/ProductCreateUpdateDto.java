@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import uz.hiparts.hipartsuz.model.Category;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 public class ProductCreateUpdateDto {
