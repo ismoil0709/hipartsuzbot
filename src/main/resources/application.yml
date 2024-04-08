@@ -10,3 +10,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+bot:
+  data:
+    ngrok_url : loved-basilisk-magnetic.ngrok-free.app
+server:
+  port: 8080
