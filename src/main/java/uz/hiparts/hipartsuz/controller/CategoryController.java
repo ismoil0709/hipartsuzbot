@@ -14,6 +14,7 @@ import uz.hiparts.hipartsuz.service.CategoryService;
 @RequiredArgsConstructor
 @RestController("/api/v1/category")
 public class CategoryController {
+
     private final CategoryService categoryService;
 
     @GetMapping("/save")
