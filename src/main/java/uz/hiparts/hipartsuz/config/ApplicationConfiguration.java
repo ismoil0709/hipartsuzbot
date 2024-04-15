@@ -60,8 +60,8 @@ public class ApplicationConfiguration {
             System.exit(0);
         }else {
             Process process = new ProcessBuilder(ngrokPath,"http","--domain=" + ngrokUrl,serverPort).start();
-            if (!BotUtils.getWebhookUrl().equals(ngrokUrl + "/api/v1/telegram"))
-                BotUtils.send(SetWebhook.builder().url(ngrokUrl + "/api/v1/telegram").build());
+            if (!BotUtils.getWebhookUrl().equals("https://" + ngrokUrl + "/api/v1/telegram"))
+                BotUtils.send(SetWebhook.builder().url("https://" + ngrokUrl + "/api/v1/telegram").build());
         }
     }
 }
