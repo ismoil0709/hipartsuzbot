@@ -35,10 +35,11 @@ public class ApplicationConfiguration {
         String serverPort = env.getProperty("server.port");
         String ngrokPath = null;
         String command = "which";
-        if (System.getProperty("os.name").equalsIgnoreCase("windows")) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             command = "where";
         }
         try {
+            System.out.println(command);
             Process process = new ProcessBuilder(command, "ngrok").start();
             process.waitFor();
             int exitCode = process.exitValue();
