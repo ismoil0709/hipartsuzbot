@@ -14,13 +14,10 @@ import java.util.List;
 public interface OrderService {
     void create(Order order);
 
-    Order update(Order order);
-
-    void delete(Long id);
-
     OrderDto getById(Long id);
 
     List<OrderDto> getAll();
+
     List<OrderDto> findByUser(User user);
 
     List<OrderDto> findByBranch(String branch);

@@ -11,6 +11,8 @@ import uz.hiparts.hipartsuz.dto.CategoryDto;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.service.CategoryService;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController("/api/v1/category")
 public class CategoryController {
@@ -30,5 +32,9 @@ public class CategoryController {
     @GetMapping("/get/name/{name}")
     public ResponseEntity<Category> getByName(@PathVariable String name) {
         return ResponseEntity.ok(categoryService.getByName(name));
+    }
+    @GetMapping("/get/all")
+    public ResponseEntity<List<Category>> getAll() {
+        return ResponseEntity.ok(categoryService.getAll());
     }
 }

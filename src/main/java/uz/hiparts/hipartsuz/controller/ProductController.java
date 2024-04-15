@@ -15,6 +15,8 @@ import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.service.ProductService;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController("/api/v1/product")
 public class ProductController {
@@ -48,5 +50,10 @@ public class ProductController {
     @GetMapping("/get/category")
     public ResponseEntity<ProductDto> getByCategory(@Valid @RequestBody Category category) {
         return ResponseEntity.ok(productService.getByCategory(category));
+    }
+
+    @GetMapping("/get/all")
+    public ResponseEntity<List<ProductDto>> getAll() {
+        return ResponseEntity.ok(productService.getAll());
     }
 }

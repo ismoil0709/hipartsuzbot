@@ -30,15 +30,7 @@ public class OrderController {
         orderService.create(order);
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<Order> updateOrder(@Valid @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.update(order));
-    }
 
-    @DeleteMapping("/delete")
-    public void deleteOrder(Long id) {
-        orderService.delete(id);
-    }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<OrderDto> getById(@PathVariable Long id) {

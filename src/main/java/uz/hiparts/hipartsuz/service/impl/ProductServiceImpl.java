@@ -70,4 +70,9 @@ public class ProductServiceImpl implements ProductService {
         product.setActive(false);
         productRepository.save(product);
     }
+
+    @Override
+    public List<ProductDto> getAll() {
+        return productRepository.findAll().stream().map(ProductDto::new).toList();
+    }
 }
