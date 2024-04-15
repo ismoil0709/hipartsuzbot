@@ -7,6 +7,7 @@ import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.CategoryService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,5 +40,10 @@ public class CategoryServiceImpl implements CategoryService {
             throw new RuntimeException("Category not found");
         }
         return byName.get();
+    }
+
+    @Override
+    public List<Category> getAll() {
+        return categoryRepository.findAll();
     }
 }

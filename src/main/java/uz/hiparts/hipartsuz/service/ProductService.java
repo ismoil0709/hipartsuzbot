@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.ProductCreateUpdateDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.model.Category;
+import uz.hiparts.hipartsuz.model.Product;
+
+import java.util.List;
 
 @Service
 public interface ProductService {
@@ -13,4 +16,5 @@ public interface ProductService {
     ProductDto getByName(String name);
     ProductDto getByCategory(Category category);
     void delete(Long id);
+    List<ProductDto> getAll();
 }

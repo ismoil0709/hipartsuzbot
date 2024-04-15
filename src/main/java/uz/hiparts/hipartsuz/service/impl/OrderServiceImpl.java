@@ -8,7 +8,6 @@ import uz.hiparts.hipartsuz.exception.InvalidArgumentException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.exception.NullOrEmptyException;
 import uz.hiparts.hipartsuz.model.Order;
-import uz.hiparts.hipartsuz.model.Product;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
@@ -17,7 +16,6 @@ import uz.hiparts.hipartsuz.service.OrderService;
 import uz.hiparts.hipartsuz.util.Validations;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
     @Override
-    public List<OrderDto> findActive(boolean active) {
+    public List<OrderDto> findByActive(boolean active) {
         List<Order> orders = orderRepository.findByActive(active);
         return orders.stream()
                 .map(OrderDto::new)
@@ -117,7 +115,7 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
     @Override
-    public List<OrderDto> findActiveByOrderType(boolean active, OrderType orderType) {
+    public List<OrderDto> findByActiveAndOrderType(boolean active, OrderType orderType) {
         List<Order> orders = orderRepository.findByActiveAndOrderType(active, orderType);
         return orders.stream()
                 .map(OrderDto::new)
@@ -125,15 +123,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> findByTimeBetween(LocalDateTime startDate, LocalDateTime endDate) {
-        if (startDate == null)
+    public List<OrderDto> findByTimeBetween(LocalDateTime startTime, LocalDateTime endTime) {
+        if (startTime == null)
             throw new NullOrEmptyException("Start date");
-        if (endDate == null)
+        if (endTime == null)
             throw new NullOrEmptyException("End date");
-        if (startDate.isAfter(endDate))
+        if (startTime.isAfter(endTime))
             throw new InvalidArgumentException("Start time");
 
-        List<Order> orders = orderRepository.findByTimeBetween(startDate, endDate);
+        List<Order> orders = orderRepository.findByTimeBetween(startTime, endTime);
         return orders.stream()
                 .map(OrderDto::new)
                 .collect(Collectors.toList());
@@ -162,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderDto> findActiveByPaymentType(boolean active, PaymentType paymentType) {
+    public List<OrderDto> findByActiveAndPaymentType(boolean active, PaymentType paymentType) {
         List<Order> orders = orderRepository.findByActiveAndPaymentType(active, paymentType);
         return orders.stream()
                 .map(OrderDto::new)
