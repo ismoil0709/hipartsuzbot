@@ -18,4 +18,6 @@ public class Branch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private Double lon;
+    private Double lat;
 }
