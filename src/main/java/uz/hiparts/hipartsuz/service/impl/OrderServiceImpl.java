@@ -32,34 +32,6 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
     @Override
-    public Order update(Order order) {
-        Order existingOrder = orderRepository.findById(order.getId())
-                .orElseThrow(() -> new NotFoundException("Order"));
-
-        Order updatedOrder = Order.builder()
-                .id(existingOrder.getId())
-                .products(Validations.requireNonNullElse(order.getProducts(), existingOrder.getProducts()))
-                .user(existingOrder.getUser())
-                .orderType(Validations.requireNonNullElse(order.getOrderType(), existingOrder.getOrderType()))
-                .branch(Validations.requireNonNullElse(order.getBranch(), existingOrder.getBranch()))
-                .address(Validations.requireNonNullElse(order.getAddress(), existingOrder.getAddress()))
-                .lat(Validations.requireNonNullElse(order.getLat(), existingOrder.getLat()))
-                .lon(Validations.requireNonNullElse(order.getLon(), existingOrder.getLon()))
-                .totalPrice(Validations.requireNonNullElse(order.getTotalPrice(), existingOrder.getTotalPrice()))
-                .time(Validations.requireNonNullElse(order.getTime(), existingOrder.getTime()))
-                .paymentType(Validations.requireNonNullElse(order.getPaymentType(), existingOrder.getPaymentType()))
-                .build();
-
-        return orderRepository.save(updatedOrder);
-    }
-    @Override
-    public void delete(Long id) {
-        if (!orderRepository.existsById(id))
-            throw new NotFoundException("Order");
-
-        orderRepository.deleteById(id);
-    }
-    @Override
     public OrderDto getById(Long id) {
         return new OrderDto(orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order")));

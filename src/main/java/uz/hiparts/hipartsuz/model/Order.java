@@ -45,5 +45,6 @@ public class Order {
     private LocalDateTime time;
     @NotNull
     private PaymentType paymentType;
+    private String phoneNumber;
     private boolean active;
 }

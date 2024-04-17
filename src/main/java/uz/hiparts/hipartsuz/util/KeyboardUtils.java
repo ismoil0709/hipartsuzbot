@@ -1,5 +1,6 @@
 package uz.hiparts.hipartsuz.util;
 
+import lombok.experimental.UtilityClass;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class KeyboardUtils {
     public static InlineKeyboardMarkup inlineMarkup(InlineKeyboardButton... buttons){
         List<List<InlineKeyboardButton>> rows = Arrays.stream(buttons)

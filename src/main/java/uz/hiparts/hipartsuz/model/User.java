@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -22,5 +24,6 @@ public class User {
     private Long id;
     private String name;
     private String username;
+    private String lastPhoneNumber;
     private Long chatId;
 }

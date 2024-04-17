@@ -26,9 +26,9 @@ public class TelegramUserServiceImpl implements TelegramUserService {
 
     @Override
     public String getLang(Long chatId) {
-        if (telegramUserRepository.findByChatId(chatId).isPresent())
-            return telegramUserRepository.findByChatId(chatId).get().getLang();
-        return "uz";
+        if (telegramUserRepository.findByChatId(chatId).isEmpty())
+            setLang(chatId,"uz");
+        return telegramUserRepository.findByChatId(chatId).get().getLang();
     }
 
     @Override
@@ -45,9 +45,9 @@ public class TelegramUserServiceImpl implements TelegramUserService {
 
     @Override
     public UserState getState(Long chatId) {
-        if (telegramUserRepository.findByChatId(chatId).isPresent())
-            return telegramUserRepository.findByChatId(chatId).get().getState();
-        return UserState.DEFAULT;
+        if (telegramUserRepository.findByChatId(chatId).isEmpty())
+            setState(chatId,UserState.DEFAULT);
+        return telegramUserRepository.findByChatId(chatId).get().getState();
     }
 
     @Override

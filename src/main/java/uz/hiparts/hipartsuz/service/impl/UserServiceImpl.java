@@ -14,8 +14,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     @Override
     public void save(User user) {
-        if (userRepository.findByChatId(user.getChatId()).isEmpty())
-            userRepository.save(user);
+        userRepository.save(user);
     }
     @Override
     public void delete(Long id) {

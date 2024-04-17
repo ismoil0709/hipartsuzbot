@@ -1,7 +1,6 @@
 package uz.hiparts.hipartsuz.model.enums;
 
 public enum LangFields {
-    START,
     CHOOSE_LANGUAGE,
     BUTTON_RUSSIAN_LANGUAGE,
     BUTTON_UZBEK_LANGUAGE,

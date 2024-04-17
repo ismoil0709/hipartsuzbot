@@ -3,10 +3,7 @@ package uz.hiparts.hipartsuz.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uz.hiparts.hipartsuz.dto.CategoryDto;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.service.CategoryService;
@@ -14,7 +11,8 @@ import uz.hiparts.hipartsuz.service.CategoryService;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RestController("/api/v1/category")
+@RestController
+@RequestMapping("/api/v1/category")
 public class CategoryController {
 
     private final CategoryService categoryService;
