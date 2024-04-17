@@ -5,11 +5,14 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
+import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.service.BranchService;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
@@ -18,6 +21,8 @@ import uz.hiparts.hipartsuz.util.KeyboardUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -64,8 +69,10 @@ public class TelegramService {
         TelegramUser telegramUser = telegramUserService.getByChatId(callbackQuery.getMessage().getChatId());
         if (data.startsWith("lang")) {
             sendMessageService.setLang(data, callbackQuery.getMessage().getMessageId(), telegramUser);
-        }else if (data.equals("change-language")){
-            BotUtils.send(sendMessageService.changeLang(telegramUser,callbackQuery.getMessage().getMessageId()));
+        }
+        Callback callback = Callback.of(data);
+        switch (callback){
+            case CHANGE_LANGUAGE -> BotUtils.send(sendMessageService.changeLang(telegramUser,callbackQuery.getMessage().getMessageId()));
         }
     }
 
