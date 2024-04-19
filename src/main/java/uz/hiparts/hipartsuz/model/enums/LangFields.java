@@ -21,5 +21,6 @@ public enum LangFields {
     BUTTON_YES,
     BUTTON_NO,
     USER_ADDRESS,
-    BUTTON_CATALOG
+    BUTTON_CATALOG,
+    CHOOSE_BRANCH
 }
