@@ -77,42 +77,49 @@ public class TelegramService {
             case PICK_UP -> {
                 List<Branch> branches = new ArrayList<>();
                 branches.add(Branch.builder()
+                        .id(1L)
                         .name("A1")
                         .lat(1.0)
                         .lon(1.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(2L)
                         .name("A2")
                         .lat(2.0)
                         .lon(2.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(3L)
                         .name("A3")
                         .lat(3.0)
                         .lon(3.0)
                         .build());
                 branches.add(Branch.builder()
-                        .id(7L)
+                        .id(4L)
                         .name("A4")
                         .lat(4.0)
                         .lon(4.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(5L)
                         .name("A5")
                         .lat(5.0)
                         .lon(5.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(6L)
                         .name("A6")
                         .lat(6.0)
                         .lon(6.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(7L)
                         .name("A7")
                         .lat(7.0)
                         .lon(7.0)
                         .build());
                 branches.add(Branch.builder()
+                        .id(8L)
                         .name("A8")
                         .lat(8.0)
                         .lon(8.0)
