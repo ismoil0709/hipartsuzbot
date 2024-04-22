@@ -4,6 +4,6 @@ public enum UserState {
     DEFAULT,
     START,
     LANGUAGE,
-    LOCATION,
+    INPUT_LOCATION,
     INPUT_PHONE_NUMBER,
 }

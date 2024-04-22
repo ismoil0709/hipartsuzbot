@@ -16,7 +16,9 @@ public enum Callback {
     LANG_EN("lang-en"),
     CHANGE_LANGUAGE("change-language"),
     PICK_UP("pick-up"),
-    DELIVERY("delivery");
+    DELIVERY("delivery"),
+    CONFIRM_YES("confirm-no"),
+    CONFIRM_NO("confirm-no");
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();
     static {
