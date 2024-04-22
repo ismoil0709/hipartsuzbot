@@ -32,6 +32,7 @@ public class TelegramService {
     private final SendMessageService sendMessageService;
     private final LangService langService;
     private final UserService userService;
+    private final BranchService branchService;
 
     public void handleMessage(Message message) {
         if (message.hasText()) {
@@ -49,16 +50,15 @@ public class TelegramService {
                     telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
                     BotUtils.send(sendMessageService.start(telegramUser));
                 }
-            else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS,message.getChatId()))){
+            else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
                 BotUtils.send(SendMessage.builder()
-                                .text(langService.getMessage(LangFields.LANGUAGE_CHANGED,message.getChatId()))
-                                .replyMarkup(KeyboardUtils.inlineMarkup(
-                                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE,message.getChatId()),"change-language")
-                                ))
+                        .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, message.getChatId()))
+                        .replyMarkup(KeyboardUtils.inlineMarkup(
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, message.getChatId()), "change-language")
+                        ))
                         .chatId(message.getChatId())
                         .build());
-            }
-            else if (text.equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))){
+            } else if (text.equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))) {
                 System.out.println(text);
             }
         }
@@ -71,15 +71,68 @@ public class TelegramService {
             sendMessageService.setLang(data, callbackQuery.getMessage().getMessageId(), telegramUser);
         }
         Callback callback = Callback.of(data);
-        switch (callback){
-            case CHANGE_LANGUAGE -> BotUtils.send(sendMessageService.changeLang(telegramUser,callbackQuery.getMessage().getMessageId()));
+        switch (callback) {
+            case CHANGE_LANGUAGE ->
+                    BotUtils.send(sendMessageService.changeLang(telegramUser, callbackQuery.getMessage().getMessageId()));
+            case PICK_UP -> {
+                List<Branch> branches = new ArrayList<>();
+                branches.add(Branch.builder()
+                        .id(1L)
+                        .name("A1")
+                        .lat(1.0)
+                        .lon(1.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(2L)
+                        .name("A2")
+                        .lat(2.0)
+                        .lon(2.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(3L)
+                        .name("A3")
+                        .lat(3.0)
+                        .lon(3.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(4L)
+                        .name("A4")
+                        .lat(4.0)
+                        .lon(4.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(5L)
+                        .name("A5")
+                        .lat(5.0)
+                        .lon(5.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(6L)
+                        .name("A6")
+                        .lat(6.0)
+                        .lon(6.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(7L)
+                        .name("A7")
+                        .lat(7.0)
+                        .lon(7.0)
+                        .build());
+                branches.add(Branch.builder()
+                        .id(8L)
+                        .name("A8")
+                        .lat(8.0)
+                        .lon(8.0)
+                        .build());
+                BotUtils.send(sendMessageService.sendBranches(branches, callbackQuery.getMessage().getMessageId(), telegramUser));
+            }
         }
     }
 
     public void handleInput(Message message) {
         TelegramUser telegramUser = telegramUserService.getByChatId(message.getChatId());
         User user = userService.getByChatId(message.getChatId());
-        if (user == null){
+        if (user == null) {
             user = User.builder()
                     .chatId(telegramUser.getChatId())
                     .name(message.getFrom().getFirstName())
@@ -96,17 +149,17 @@ public class TelegramService {
                 } else {
                     phoneNumber = "+998" + message.getText();
                 }
-                if (!phoneNumber.matches(Regex.PHONE_NUMBER)){
-                    telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_PHONE_NUMBER);
+                if (!phoneNumber.matches(Regex.PHONE_NUMBER)) {
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PHONE_NUMBER);
                     sendMessageService.start(telegramUser);
                 }
-                if (!Objects.equals(user.getLastPhoneNumber(), phoneNumber)){
+                if (!Objects.equals(user.getLastPhoneNumber(), phoneNumber)) {
                     //todo confirm via sms
                 }
                 user.setLastPhoneNumber(phoneNumber);
                 userService.save(user);
-                UtilLists.orderMap.put(message.getChatId(),Order.builder().phoneNumber(phoneNumber).build());
-                BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber,telegramUser));
+                UtilLists.orderMap.put(message.getChatId(), Order.builder().phoneNumber(phoneNumber).build());
+                BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber, telegramUser));
             }
         }
     }

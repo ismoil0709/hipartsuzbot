@@ -2,12 +2,11 @@ package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
@@ -16,49 +15,54 @@ import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.KeyboardUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class SendMessageService {
     private final LangService langService;
     private final TelegramUserService telegramUserService;
-    public SendMessage firstStart(TelegramUser telegramUser){
-            return SendMessage.builder()
-                    .chatId(telegramUser.getChatId())
-                    .text("Assalomu aleykum! Keling, avvaliga xizmat ko'rsatish tilini tanlab olaylik!")
-                    .replyMarkup(KeyboardUtils.inlineMarkup(
-                            KeyboardUtils.inlineButton("\uD83C\uDDF7\uD83C\uDDFA Russian", Callback.LANG_RU.getCallback()),
-                            KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDFF O'zbek tili", Callback.LANG_UZ.getCallback()),
-                            KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English",Callback.LANG_EN.getCallback())
-                    ))
-                    .build();
-    }
-    public EditMessageText changeLang(TelegramUser telegramUser,Integer messageId){
-        return EditMessageText.builder()
-                .messageId(messageId)
+
+    public SendMessage firstStart(TelegramUser telegramUser) {
+        return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.CHOOSE_LANGUAGE,telegramUser.getChatId()))
+                .text("Assalomu aleykum! Keling, avvaliga xizmat ko'rsatish tilini tanlab olaylik!")
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton("\uD83C\uDDF7\uD83C\uDDFA Russian", Callback.LANG_RU.getCallback()),
                         KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDFF O'zbek tili", Callback.LANG_UZ.getCallback()),
-                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English",Callback.LANG_EN.getCallback())
+                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English", Callback.LANG_EN.getCallback())
                 ))
                 .build();
     }
 
-    public SendMessage start(TelegramUser telegramUser){
+    public EditMessageText changeLang(TelegramUser telegramUser, Integer messageId) {
+        return EditMessageText.builder()
+                .messageId(messageId)
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.CHOOSE_LANGUAGE, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton("\uD83C\uDDF7\uD83C\uDDFA Russian", Callback.LANG_RU.getCallback()),
+                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDFF O'zbek tili", Callback.LANG_UZ.getCallback()),
+                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English", Callback.LANG_EN.getCallback())
+                ))
+                .build();
+    }
+
+    public SendMessage start(TelegramUser telegramUser) {
         return SendMessage.builder()
-                .text(langService.getMessage(LangFields.PHONE_NUMBER,telegramUser.getChatId()))
+                .text(langService.getMessage(LangFields.PHONE_NUMBER, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.markup(
                         KeyboardUtils.button(
-                                langService.getMessage(LangFields.BUTTON_CONTACT,telegramUser.getChatId()),
-                                true,false
+                                langService.getMessage(LangFields.BUTTON_CONTACT, telegramUser.getChatId()),
+                                true, false
                         )
                 ))
                 .chatId(telegramUser.getChatId())
                 .build();
     }
 
-    public void setLang(String data,Integer messageId,TelegramUser telegramUser) {
+    public void setLang(String data, Integer messageId, TelegramUser telegramUser) {
         String lang = data.split("-")[1];
         if (lang.equals("ru"))
             telegramUser.setLang("ru");
@@ -78,17 +82,32 @@ public class SendMessageService {
                         .chatId(telegramUser.getChatId())
                         .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
                         .replyMarkup(KeyboardUtils.markup(
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS,telegramUser.getChatId()),false,false),
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER,telegramUser.getChatId()),false,false)
+                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
                         ))
                         .build()
         );
     }
 
-    public SendMessage sendPhoneNumber(String phoneNumber,TelegramUser telegramUser) {
+    public SendMessage sendPhoneNumber(String phoneNumber, TelegramUser telegramUser) {
         return SendMessage.builder()
-                .text(langService.getMessage(LangFields.USER_PHONE_NUMBER,telegramUser.getChatId()) + " " + phoneNumber)
+                .text(langService.getMessage(LangFields.USER_PHONE_NUMBER, telegramUser.getChatId()) + " " + phoneNumber)
                 .chatId(telegramUser.getChatId())
+                .build();
+    }
+
+    public EditMessageText sendBranches(List<Branch> branches, Integer messageId, TelegramUser telegramUser) {
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        for (Branch branch : branches) {
+            buttons.add(KeyboardUtils.inlineButton(branch.getName(), Callback.BRANCH.getCallback() + branch.getId()));
+        }
+        System.out.println(buttons);
+
+        return EditMessageText.builder()
+                .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
+                .text(langService.getMessage(LangFields.CHOOSE_BRANCH, telegramUser.getChatId()))
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
                 .build();
     }
 }
