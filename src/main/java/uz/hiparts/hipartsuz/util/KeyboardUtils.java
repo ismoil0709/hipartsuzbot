@@ -2,7 +2,6 @@ package uz.hiparts.hipartsuz.util;
 
 import lombok.experimental.UtilityClass;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -25,13 +24,15 @@ public class KeyboardUtils {
         return new InlineKeyboardMarkup(rows);
     }
     public static InlineKeyboardMarkup inlineMarkup(List<InlineKeyboardButton> buttons){
-        List<List<InlineKeyboardButton>> rows =
-                buttons.stream()
-                .map(button -> {
-                    List<InlineKeyboardButton> row =  new ArrayList<>();
-                    row.add(button);
-                    return row;
-                }).collect(Collectors.toList());
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        for (int i = 0; i < buttons.size(); i++) {
+            List<InlineKeyboardButton> row =  new ArrayList<>();
+            if (i != buttons.size() -1) {
+                row.add(buttons.get(i));
+                row.add(buttons.get(i+1));
+            }
+            rows.add(row);
+        }
         return new InlineKeyboardMarkup(rows);
     }
     public static InlineKeyboardButton inlineButton(String text, String callBack){
