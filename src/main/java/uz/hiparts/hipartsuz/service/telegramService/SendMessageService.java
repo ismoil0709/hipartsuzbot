@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import uz.hiparts.hipartsuz.dto.AddressDto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.TelegramUser;
@@ -95,7 +97,13 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .build();
     }
-
+    public SendMessage askDeliveryLocation(TelegramUser telegramUser){
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_SHIPPING_ADDRESS, telegramUser.getChatId()))
+                .build();
+    }
+    
     public EditMessageText sendBranches(List<Branch> branches, Integer messageId, TelegramUser telegramUser) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         for (Branch branch : branches) {
@@ -109,5 +117,18 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .build();
+    }
+
+    public SendMessage sendAddressDetails(AddressDto addressDto, TelegramUser telegramUser) {
+            return SendMessage.builder()
+                    .chatId(telegramUser.getChatId())
+                    .text(langService.getMessage(LangFields.CONFIRM_ADDRESS, telegramUser.getChatId()) + addressDto.getName() + addressDto.getDisplayName())
+                    .replyMarkup(
+                            KeyboardUtils.inlineMarkup(
+                                    KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_YES, telegramUser.getChatId()), Callback.CONFIRM_YES.getCallback()),
+                                    KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NO, telegramUser.getChatId()), Callback.CONFIRM_NO.getCallback())
+                            )
+                    )
+                    .build();
     }
 }
