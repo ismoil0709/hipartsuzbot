@@ -34,7 +34,7 @@ public class TelegramController {
                         .build());
             }
             TelegramUser telegramUser = telegramUserService.getByChatId(update.getMessage().getChatId());
-            if (update.getMessage().getText() != null && update.getMessage().getText().equals("/start") || !(telegramUser != null && telegramUser.getState().name().startsWith("INPUT")))
+            if (update.getMessage().getText() != null && update.getMessage().getText().equals("/start") || !(telegramUser != null && telegramUserService.getState(update.getMessage().getChatId()).name().startsWith("INPUT")))
                 telegramService.handleMessage(update.getMessage());
             else telegramService.handleInput(update.getMessage());
         } else if (update.hasCallbackQuery()) {
