@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,12 @@ public class KeyboardUtils {
         button.setText(text);
         button.setCallbackData(callBack);
         return button;
+    }
+    public static InlineKeyboardButton inlineButtonWithWebApp(String text, String webAppUrl){
+        return InlineKeyboardButton.builder()
+                .text(text)
+                .webApp(new WebAppInfo(webAppUrl))
+                .build();
     }
     public static KeyboardButton button(String text,boolean contact,boolean location){
         KeyboardButton keyboardButton = new KeyboardButton();

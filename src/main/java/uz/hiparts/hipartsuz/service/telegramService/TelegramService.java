@@ -8,12 +8,15 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.hiparts.hipartsuz.dto.AddressDto;
+import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
+import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.service.BranchService;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
@@ -22,6 +25,8 @@ import uz.hiparts.hipartsuz.util.KeyboardUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -37,7 +42,6 @@ public class TelegramService {
         if (message.hasText()) {
             TelegramUser telegramUser = new TelegramUser();
             String text = message.getText();
-
             if (text.equals("/start"))
                 if (telegramUserService.getByChatId(message.getChatId()) == null) {
                     telegramUser.setChatId(message.getChatId());
@@ -51,16 +55,11 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.start(telegramUser));
                 }
             else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
-                BotUtils.send(SendMessage.builder()
-                        .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, message.getChatId()))
-                        .replyMarkup(KeyboardUtils.inlineMarkup(
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, message.getChatId()), "change-language")
-                        ))
-                        .chatId(message.getChatId())
-                        .build());
-
+                BotUtils.send(sendMessageService.changeLang(message.getChatId()));
             } else if (text.equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))) {
-                System.out.println(text);
+                telegramUser = telegramUserService.getByChatId(message.getChatId());
+                telegramUserService.setState(message.getChatId(),UserState.INPUT_PHONE_NUMBER);
+                BotUtils.send(sendMessageService.start(telegramUser));
            }
         }
     }
@@ -71,64 +70,28 @@ public class TelegramService {
         if (data.startsWith("lang")) {
             sendMessageService.setLang(data, callbackQuery.getMessage().getMessageId(), telegramUser);
         }
+        if (data.startsWith(Callback.BRANCH.getCallback())){
+            Long branchId = Long.parseLong(data.split("-")[1]);
+            Branch branch = branchService.getById(branchId);
+            Order order = UtilLists.orderMap.get(callbackQuery.getMessage().getChatId());
+            order.setOrderType(OrderType.PICK_UP);
+            order.setLat(branch.getLat());
+            order.setLon(branch.getLon());
+            order.setAddress(branch.getName());
+            UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(),order);
+            BotUtils.send(sendMessageService.sendCatalog(telegramUser,callbackQuery.getMessage().getMessageId()));
+        }
         Callback callback = Callback.of(data);
-        switch (callback){
-            case CHANGE_LANGUAGE -> BotUtils.send(sendMessageService.changeLang(telegramUser,callbackQuery.getMessage().getMessageId()));
+        switch (callback) {
+            case CHANGE_LANGUAGE ->
+                    BotUtils.send(sendMessageService.changeLang(telegramUser, callbackQuery.getMessage().getMessageId()));
             case DELIVERY -> BotUtils.send(sendMessageService.askDeliveryLocation(telegramUser));
-             case PICK_UP -> {
-                List<Branch> branches = new ArrayList<>();
-                branches.add(Branch.builder()
-                        .id(1L)
-                        .name("A1")
-                        .lat(1.0)
-                        .lon(1.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(2L)
-                        .name("A2")
-                        .lat(2.0)
-                        .lon(2.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(3L)
-                        .name("A3")
-                        .lat(3.0)
-                        .lon(3.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(4L)
-                        .name("A4")
-                        .lat(4.0)
-                        .lon(4.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(5L)
-                        .name("A5")
-                        .lat(5.0)
-                        .lon(5.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(6L)
-                        .name("A6")
-                        .lat(6.0)
-                        .lon(6.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(7L)
-                        .name("A7")
-                        .lat(7.0)
-                        .lon(7.0)
-                        .build());
-                branches.add(Branch.builder()
-                        .id(8L)
-                        .name("A8")
-                        .lat(8.0)
-                        .lon(8.0)
-                        .build());
+            case PICK_UP -> {
+                List<Branch> branches = branchService.getAll();
                 BotUtils.send(sendMessageService.sendBranches(branches, callbackQuery.getMessage().getMessageId(), telegramUser));
             }
         }
-
+    }
     public void handleInput(Message message) {
         TelegramUser telegramUser = telegramUserService.getByChatId(message.getChatId());
         User user = userService.getByChatId(message.getChatId());
@@ -158,8 +121,10 @@ public class TelegramService {
                 }
                 user.setLastPhoneNumber(phoneNumber);
                 userService.save(user);
+                telegramUserService.setState(telegramUser.getChatId(), UserState.START);
                 UtilLists.orderMap.put(message.getChatId(), Order.builder().phoneNumber(phoneNumber).build());
                 BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber, telegramUser));
+                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
             }
             case INPUT_LOCATION -> {
                 if (message.hasLocation()){
@@ -170,7 +135,7 @@ public class TelegramService {
                                 .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))
                                 .build();
                     }
-                    else sendMessageService.sendAddressDetails(addressDetails, telegramUser);
+                    else BotUtils.send(sendMessageService.sendAddressDetails(addressDetails, telegramUser));
                 }
                     else SendMessage.builder()
                         .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))

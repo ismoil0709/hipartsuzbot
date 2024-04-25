@@ -35,7 +35,7 @@ public class SendMessageService {
                     ))
                     .build();
     }
-    public EditMessageText chooseLang(TelegramUser telegramUser, Integer messageId){
+    public EditMessageText changeLang(TelegramUser telegramUser, Integer messageId){
         return EditMessageText.builder()
                 .messageId(messageId)
                 .chatId(telegramUser.getChatId())
@@ -56,14 +56,13 @@ public class SendMessageService {
                 ))
                 .build();
     }
-
     public SendMessage start(TelegramUser telegramUser){
         return SendMessage.builder()
                 .text(langService.getMessage(LangFields.PHONE_NUMBER,telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.markup(
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_CONTACT,telegramUser.getChatId()),
-                                true,false
+                                    true,false
                         )
                 ))
                 .chatId(telegramUser.getChatId())
@@ -97,10 +96,25 @@ public class SendMessageService {
         );
     }
 
+    public EditMessageText sendCatalog(TelegramUser telegramUser, Integer messageId){
+        return EditMessageText.builder()
+                .messageId(messageId)
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.CATALOG_MESSAGE,telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG,telegramUser.getChatId()),"https://google.com")
+                ))
+                .build();
+    }
+
     public SendMessage sendPhoneNumber(String phoneNumber,TelegramUser telegramUser) {
         return SendMessage.builder()
                 .text(langService.getMessage(LangFields.USER_PHONE_NUMBER,telegramUser.getChatId()) + " " + phoneNumber)
                 .chatId(telegramUser.getChatId())
+                .replyMarkup(KeyboardUtils.markup(
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS,telegramUser.getChatId()),false,false),
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER,telegramUser.getChatId()),false,false)
+                ))
                 .build();
     }
     public SendMessage askDeliveryLocation(TelegramUser telegramUser){
@@ -135,6 +149,17 @@ public class SendMessageService {
                                 KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NO, telegramUser.getChatId()), Callback.CONFIRM_NO.getCallback())
                         )
                 )
+                .build();
+    }
+
+    public SendMessage chooseOrderType(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.DELIVERY_OR_PICKUP,telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_DELIVERY,telegramUser.getChatId()),Callback.DELIVERY.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_PICKUP,telegramUser.getChatId()),Callback.PICK_UP.getCallback())
+                ))
                 .build();
     }
 }
