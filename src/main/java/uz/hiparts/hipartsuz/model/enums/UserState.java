@@ -6,4 +6,8 @@ public enum UserState {
     LANGUAGE,
     INPUT_LOCATION,
     INPUT_PHONE_NUMBER,
+    CATALOG,
+    CHOOSE_BRANCH,
+    CHOOSE_ORDER_TYPE,
+    ADDRESS_DETAILS
 }

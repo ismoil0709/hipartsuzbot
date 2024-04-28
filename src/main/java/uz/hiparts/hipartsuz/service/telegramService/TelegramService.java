@@ -3,7 +3,6 @@ package uz.hiparts.hipartsuz.service.telegramService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -21,11 +20,9 @@ import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
 import uz.hiparts.hipartsuz.util.BotUtils;
-import uz.hiparts.hipartsuz.util.KeyboardUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -80,15 +77,23 @@ public class TelegramService {
             order.setAddress(branch.getName());
             UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(),order);
             BotUtils.send(sendMessageService.sendCatalog(telegramUser,callbackQuery.getMessage().getMessageId()));
+            return;
         }
         Callback callback = Callback.of(data);
         switch (callback) {
             case CHANGE_LANGUAGE ->
                     BotUtils.send(sendMessageService.changeLang(telegramUser, callbackQuery.getMessage().getMessageId()));
-            case DELIVERY -> BotUtils.send(sendMessageService.askDeliveryLocation(telegramUser));
+            case DELIVERY, LOCATION_CONFIRM_NO -> {
+                telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_LOCATION);
+                sendMessageService.askDeliveryLocation(telegramUser,callbackQuery.getMessage().getMessageId());
+            }
             case PICK_UP -> {
                 List<Branch> branches = branchService.getAll();
                 BotUtils.send(sendMessageService.sendBranches(branches, callbackQuery.getMessage().getMessageId(), telegramUser));
+            }
+            case LOCATION_CONFIRM_YES ->{
+                    sendMessageService.sendLocation(telegramUser,UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getAddress(),callbackQuery.getMessage().getMessageId());
+                BotUtils.send(sendMessageService.sendCatalog(telegramUser,callbackQuery.getMessage().getMessageId()));
             }
         }
     }
@@ -130,16 +135,17 @@ public class TelegramService {
                 if (message.hasLocation()){
                     Location location = message.getLocation();
                     AddressDto addressDetails = new RestTemplate().getForObject("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + location.getLatitude() + "&lon=" + location.getLongitude() + "&zoom=155&addressdetails=1", AddressDto.class);
-                    if (addressDetails == null){
-                        SendMessage.builder()
-                                .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))
-                                .build();
+                    if (addressDetails != null) {
+                        Order order = UtilLists.orderMap.get(message.getChatId());
+                        order.setAddress(addressDetails.getDisplayName());
+                        order.setLat(location.getLatitude());
+                        order.setLon(location.getLongitude());
+                        UtilLists.orderMap.put(message.getChatId(),order);
+                        BotUtils.send(sendMessageService.sendAddressDetails(addressDetails, telegramUser));
                     }
-                    else BotUtils.send(sendMessageService.sendAddressDetails(addressDetails, telegramUser));
+                    else BotUtils.send(sendMessageService.invalidShippingAddress(telegramUser));
                 }
-                    else SendMessage.builder()
-                        .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))
-                        .build();
+                else BotUtils.send(sendMessageService.invalidShippingAddress(telegramUser));
             }
         }
     }

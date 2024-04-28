@@ -31,7 +31,7 @@ public class KeyboardUtils {
             if (i != buttons.size() -1) {
                 row.add(buttons.get(i));
                 row.add(buttons.get(i+1));
-            }
+            }else row.add(buttons.get(i));
             rows.add(row);
         }
         return new InlineKeyboardMarkup(rows);

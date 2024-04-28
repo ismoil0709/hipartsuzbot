@@ -8,7 +8,7 @@ spring:
     password: ismoil_0709
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
 bot:
   data:

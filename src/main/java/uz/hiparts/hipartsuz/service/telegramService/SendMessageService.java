@@ -102,7 +102,7 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.CATALOG_MESSAGE,telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG,telegramUser.getChatId()),"https://google.com")
+                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG,telegramUser.getChatId()),"https://hipartsuz-front.vercel.app/")
                 ))
                 .build();
     }
@@ -117,11 +117,18 @@ public class SendMessageService {
                 ))
                 .build();
     }
-    public SendMessage askDeliveryLocation(TelegramUser telegramUser){
-        return SendMessage.builder()
+    public void askDeliveryLocation(TelegramUser telegramUser,Integer messageId){
+        BotUtils.send(DeleteMessage.builder()
+                        .messageId(messageId)
+                        .chatId(telegramUser.getChatId())
+                .build());
+        BotUtils.send(SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_SHIPPING_ADDRESS, telegramUser.getChatId()))
-                .build();
+                .replyMarkup(KeyboardUtils.markup(
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_LOCATION,telegramUser.getChatId()),false,true)
+                ))
+                .build());
     }
 
     public EditMessageText sendBranches(List<Branch> branches, Integer messageId, TelegramUser telegramUser) {
@@ -129,8 +136,6 @@ public class SendMessageService {
         for (Branch branch : branches) {
             buttons.add(KeyboardUtils.inlineButton(branch.getName(), Callback.BRANCH.getCallback() + branch.getId()));
         }
-        System.out.println(buttons);
-
         return EditMessageText.builder()
                 .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
                 .text(langService.getMessage(LangFields.CHOOSE_BRANCH, telegramUser.getChatId()))
@@ -142,11 +147,11 @@ public class SendMessageService {
     public SendMessage sendAddressDetails(AddressDto addressDto, TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.CONFIRM_ADDRESS, telegramUser.getChatId()) + addressDto.getName() + addressDto.getDisplayName())
+                .text(langService.getMessage(LangFields.CONFIRM_ADDRESS, telegramUser.getChatId()) + "\n" + addressDto.getName() + addressDto.getDisplayName())
                 .replyMarkup(
                         KeyboardUtils.inlineMarkup(
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_YES, telegramUser.getChatId()), Callback.CONFIRM_YES.getCallback()),
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NO, telegramUser.getChatId()), Callback.CONFIRM_NO.getCallback())
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_YES, telegramUser.getChatId()), Callback.LOCATION_CONFIRM_YES.getCallback()),
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NO, telegramUser.getChatId()), Callback.LOCATION_CONFIRM_NO.getCallback())
                         )
                 )
                 .build();
@@ -161,5 +166,32 @@ public class SendMessageService {
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_PICKUP,telegramUser.getChatId()),Callback.PICK_UP.getCallback())
                 ))
                 .build();
+    }
+
+    public SendMessage invalidShippingAddress(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS,telegramUser.getChatId()))
+                .chatId(telegramUser.getChatId())
+                .build();
+    }
+
+    public void sendLocation(TelegramUser telegramUser,String location, Integer messageId) {
+        BotUtils.send(
+                DeleteMessage.builder()
+                        .chatId(telegramUser.getChatId())
+                        .messageId(messageId)
+                        .build()
+        );
+        BotUtils.send(
+                SendMessage.builder()
+                        .chatId(telegramUser.getChatId())
+                        .text(langService.getMessage(LangFields.USER_ADDRESS,telegramUser.getChatId()) + "\n" + location)
+                        .replyMarkup(
+                                KeyboardUtils.markup(
+                                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS,telegramUser.getChatId()),false,false),
+                                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER,telegramUser.getChatId()),false,false)
+                                ))
+                        .build()
+        );
     }
 }

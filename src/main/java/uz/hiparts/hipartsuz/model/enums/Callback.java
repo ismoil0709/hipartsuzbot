@@ -15,11 +15,14 @@ public enum Callback {
     LANG_RU("lang-ru"),
     LANG_EN("lang-en"),
     CHANGE_LANGUAGE("change-language"),
-    PICK_UP("pick-up"),
+    PICK_UP("pickup"),
     DELIVERY("delivery"),
     CONFIRM_YES("confirm-no"),
     CONFIRM_NO("confirm-no"),
-    BRANCH("branch-");
+    BRANCH("branch-"),
+    CATALOG("catalog"),
+    LOCATION_CONFIRM_YES("location-confirm-yes"),
+    LOCATION_CONFIRM_NO("location-confirm-no");
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();
     static {
@@ -28,10 +31,7 @@ public enum Callback {
         }
     }
     public static Callback of(String data){
-        Callback callbacks = map.get(data);
-        if(callbacks != null){
-            return callbacks;
-        }
-        throw new IllegalArgumentException();
+        System.out.println(data);
+        return map.get(data);
     }
 }
