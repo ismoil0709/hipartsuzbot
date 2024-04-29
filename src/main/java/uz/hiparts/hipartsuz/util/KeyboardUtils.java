@@ -28,10 +28,10 @@ public class KeyboardUtils {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         for (int i = 0; i < buttons.size(); i++) {
             List<InlineKeyboardButton> row =  new ArrayList<>();
-            if (i != buttons.size() -1) {
-                row.add(buttons.get(i));
+            row.add(buttons.get(i));
+            if (i != buttons.size()-1) {
                 row.add(buttons.get(i+1));
-            }else row.add(buttons.get(i));
+            }
             rows.add(row);
         }
         return new InlineKeyboardMarkup(rows);
