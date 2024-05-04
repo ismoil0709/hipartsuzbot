@@ -9,4 +9,5 @@ import java.util.Map;
 @UtilityClass
 public class UtilLists {
     public static Map<Long, Order> orderMap = new HashMap<>();
+    public static Map<Long,Map<String,String>> confirmCodeMap = new HashMap<>();
 }

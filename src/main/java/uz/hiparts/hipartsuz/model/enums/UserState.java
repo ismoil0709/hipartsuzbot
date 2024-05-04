@@ -9,5 +9,6 @@ public enum UserState {
     CATALOG,
     CHOOSE_BRANCH,
     CHOOSE_ORDER_TYPE,
+    INPUT_CONFIRM_CODE,
     ADDRESS_DETAILS
 }

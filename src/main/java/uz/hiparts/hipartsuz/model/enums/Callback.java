@@ -17,7 +17,7 @@ public enum Callback {
     CHANGE_LANGUAGE("change-language"),
     PICK_UP("pickup"),
     DELIVERY("delivery"),
-    CONFIRM_YES("confirm-no"),
+    CONFIRM_YES("confirm-yes"),
     CONFIRM_NO("confirm-no"),
     BRANCH("branch-"),
     CATALOG("catalog"),

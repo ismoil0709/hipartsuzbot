@@ -96,9 +96,8 @@ public class SendMessageService {
         );
     }
 
-    public EditMessageText sendCatalog(TelegramUser telegramUser, Integer messageId){
-        return EditMessageText.builder()
-                .messageId(messageId)
+    public SendMessage sendCatalog(TelegramUser telegramUser){
+        return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.CATALOG_MESSAGE,telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
@@ -193,5 +192,18 @@ public class SendMessageService {
                                 ))
                         .build()
         );
+    }
+
+    public SendMessage askConfirmCode(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .text(langService.getMessage(LangFields.INPUT_CODE,telegramUser.getChatId()))
+                .replyMarkup(
+                        KeyboardUtils.markup(
+                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_CHANGE_PHONE_NUMBER,telegramUser.getChatId()),false,false),
+                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_RESEND_CODE,telegramUser.getChatId()),false,false)
+                        )
+                )
+                .chatId(telegramUser.getChatId())
+                .build();
     }
 }

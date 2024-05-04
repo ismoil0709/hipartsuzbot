@@ -26,14 +26,8 @@ public class KeyboardUtils {
     }
     public static InlineKeyboardMarkup inlineMarkup(List<InlineKeyboardButton> buttons){
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        for (int i = 0; i < buttons.size(); i++) {
-            List<InlineKeyboardButton> row =  new ArrayList<>();
-            row.add(buttons.get(i));
-            if (i != buttons.size()-1) {
-                row.add(buttons.get(i+1));
-            }
-            rows.add(row);
-        }
+        List<InlineKeyboardButton> row = new ArrayList<>(buttons);
+        rows.add(row);
         return new InlineKeyboardMarkup(rows);
     }
     public static InlineKeyboardButton inlineButton(String text, String callBack){
