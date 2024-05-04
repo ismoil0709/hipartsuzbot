@@ -17,8 +17,8 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/save")
-    public ResponseEntity<Category> save(@Valid @RequestBody CategoryDto categoryDto) {
+    @PostMapping("/save")
+    public ResponseEntity<Category> save(@RequestBody @Valid CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.save(categoryDto));
     }
 
