@@ -9,7 +9,6 @@ import uz.hiparts.hipartsuz.service.telegramService.TelegramService;
 
 @RestController
 @RequestMapping("/api/v1/telegram")
-@CrossOrigin("/")
 @RequiredArgsConstructor
 public class TelegramController {
     private final TelegramService telegramService;
