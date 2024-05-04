@@ -15,6 +15,7 @@ public class ProductDto {
     private Category category;
     private String description;
     private boolean isActive;
+    private Double discount;
 
 
     public ProductDto(Product product){
@@ -24,6 +25,7 @@ public class ProductDto {
         this.category = product.getCategory();
         this.description = product.getDescription();
         this.isActive = product.isActive();
-        this.imgPath = product.getImgPath();            
+        this.imgPath = product.getImgPath();
+        this.discount = product.getDiscount();
     }
 }
