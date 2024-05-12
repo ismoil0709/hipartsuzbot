@@ -5,16 +5,20 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
+import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
+import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
+import uz.hiparts.hipartsuz.service.UserService;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.KeyboardUtils;
 
@@ -28,6 +32,8 @@ import java.util.Map;
 public class SendMessageService {
     private final LangService langService;
     private final TelegramUserService telegramUserService;
+    private final UserService userService;
+    private User user;
 
     public SendMessage firstStart(TelegramUser telegramUser) {
         return SendMessage.builder()
@@ -92,16 +98,28 @@ public class SendMessageService {
                         .messageId(messageId)
                         .build()
         );
-        BotUtils.send(
-                SendMessage.builder()
-                        .chatId(telegramUser.getChatId())
-                        .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
-                        .replyMarkup(KeyboardUtils.markup(
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
-                        ))
-                        .build()
-        );
+        user = userService.getByChatId(telegramUser.getChatId());
+
+        ReplyKeyboardMarkup markup;
+        if (user.getRole().equals(Role.ADMIN)) {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button("Admin", false, false)
+            );
+        } else {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
+            );
+            BotUtils.send(
+                    SendMessage.builder()
+                            .chatId(telegramUser.getChatId())
+                            .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
+                            .replyMarkup(markup)
+                            .build()
+            );
+        }
     }
 
     public SendMessage sendCatalog(TelegramUser telegramUser) {
@@ -115,13 +133,24 @@ public class SendMessageService {
     }
 
     public SendMessage sendPhoneNumber(String phoneNumber, TelegramUser telegramUser) {
+        user = userService.getByChatId(telegramUser.getChatId());
+        ReplyKeyboardMarkup markup;
+        if (user.getRole().equals(Role.ADMIN)) {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button("Admin", false, false)
+            );
+        } else {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
+            );
+        }
         return SendMessage.builder()
                 .text(langService.getMessage(LangFields.USER_PHONE_NUMBER, telegramUser.getChatId()) + " " + phoneNumber)
                 .chatId(telegramUser.getChatId())
-                .replyMarkup(KeyboardUtils.markup(
-                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
-                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
-                ))
+                .replyMarkup(markup)
                 .build();
     }
 
@@ -180,14 +209,24 @@ public class SendMessageService {
     }
 
     public SendMessage sendLocation(TelegramUser telegramUser, String location) {
+        user = userService.getByChatId(telegramUser.getChatId());
+        ReplyKeyboardMarkup markup;
+        if (user.getRole().equals(Role.ADMIN)) {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button("Admin", false, false)
+            );
+        } else {
+            markup = KeyboardUtils.markup(
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
+            );
+        }
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.USER_ADDRESS, telegramUser.getChatId()) + "\n" + location)
-                .replyMarkup(
-                        KeyboardUtils.markup(
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
-                        ))
+                .replyMarkup(markup)
                 .build();
     }
 
