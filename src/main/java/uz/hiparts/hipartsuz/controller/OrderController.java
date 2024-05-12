@@ -3,9 +3,13 @@ package uz.hiparts.hipartsuz.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uz.hiparts.hipartsuz.dto.OrderDto;
-import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
@@ -21,7 +25,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public void createOrder(@Valid Order order) {
+    public void createOrder(@RequestBody @Valid OrderDto order) {
         orderService.create(order);
     }
 
@@ -47,7 +51,7 @@ public class OrderController {
 
     @GetMapping("/get/active")
     public ResponseEntity<List<OrderDto>> getActive(boolean active) {
-        return ResponseEntity.ok(orderService.findByActive(true));
+        return ResponseEntity.ok(orderService.findByActive(active));
     }
 
     @GetMapping("/get/address")

@@ -2,7 +2,6 @@ package uz.hiparts.hipartsuz.service;
 
 import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.OrderDto;
-import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Service
 public interface OrderService {
-    void create(Order order);
+    void create(OrderDto order);
 
     OrderDto getById(Long id);
 

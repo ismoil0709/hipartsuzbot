@@ -2,7 +2,7 @@ package uz.hiparts.hipartsuz.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uz.hiparts.hipartsuz.dto.CategoryDto;
+import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.CategoryService;
@@ -17,10 +17,10 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public Category save(CategoryDto createCategory) {
+    public Category save(String name) {
         return categoryRepository.save(Category
                 .builder()
-                .name(createCategory.getName())
+                .name(name)
                 .build());
     }
 
@@ -28,7 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category getById(Long id) {
         Optional<Category> byId = categoryRepository.findById(id);
         if (byId.isEmpty()) {
-            throw new RuntimeException("Category not found");
+            throw new NotFoundException("Category");
         }
         return byId.get();
     }
@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category getByName(String name) {
         Optional<Category> byName = categoryRepository.findByName(name);
         if (byName.isEmpty()) {
-            throw new RuntimeException("Category not found");
+            throw new NotFoundException("Category");
         }
         return byName.get();
     }

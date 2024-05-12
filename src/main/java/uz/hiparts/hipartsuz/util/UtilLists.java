@@ -10,4 +10,5 @@ import java.util.Map;
 public class UtilLists {
     public static Map<Long, Order> orderMap = new HashMap<>();
     public static Map<Long,Map<String,String>> confirmCodeMap = new HashMap<>();
+    public static Map<Long,String> userPhoneNumberMap = new HashMap<>();
 }

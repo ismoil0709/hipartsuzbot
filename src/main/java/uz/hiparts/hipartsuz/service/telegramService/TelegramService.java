@@ -96,14 +96,16 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.changeLang(telegramUser, callbackQuery.getMessage().getMessageId()));
             case DELIVERY, LOCATION_CONFIRM_NO -> {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_LOCATION);
-                sendMessageService.askDeliveryLocation(telegramUser, callbackQuery.getMessage().getMessageId());
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.askDeliveryLocation(telegramUser));
             }
             case PICK_UP -> {
                 List<Branch> branches = branchService.getAll();
                 BotUtils.send(sendMessageService.sendBranches(branches, callbackQuery.getMessage().getMessageId(), telegramUser));
             }
             case LOCATION_CONFIRM_YES -> {
-                sendMessageService.sendLocation(telegramUser, UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getAddress(), callbackQuery.getMessage().getMessageId());
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(),callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.sendLocation(telegramUser, UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getAddress()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 BotUtils.send(sendMessageService.sendCatalog(telegramUser));
             }
@@ -139,9 +141,10 @@ public class TelegramService {
                     return;
                 }
                 if (!Objects.equals(user.getLastPhoneNumber(), phoneNumber)) {
-                   phoneNumber = confirmPhoneNumber(telegramUser,phoneNumber);
+                   sendCodeToPhoneNumber(telegramUser,phoneNumber);
                     return;
                 }
+                UtilLists.userPhoneNumberMap.put(telegramUser.getChatId(), phoneNumber);
                 savePhoneNumber(telegramUser,phoneNumber);
             }
             case INPUT_LOCATION -> {
@@ -153,6 +156,7 @@ public class TelegramService {
                         order.setAddress(addressDetails.getDisplayName());
                         order.setLat(location.getLatitude());
                         order.setLon(location.getLongitude());
+                        order.setOrderType(OrderType.DELIVERY);
                         UtilLists.orderMap.put(message.getChatId(), order);
                         BotUtils.send(sendMessageService.sendAddressDetails(addressDetails, telegramUser));
                     } else BotUtils.send(sendMessageService.invalidShippingAddress(telegramUser));
@@ -162,9 +166,12 @@ public class TelegramService {
                 if (message.hasText()){
                     String code = message.getText();
                     if (code.equals(langService.getMessage(LangFields.BUTTON_CHANGE_PHONE_NUMBER, message.getChatId()))) {
-
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PHONE_NUMBER);
+                        BotUtils.send(sendMessageService.start(telegramUser));
+                        return;
                     }else if (code.equals(langService.getMessage(LangFields.BUTTON_RESEND_CODE,message.getChatId()))){
-
+                        sendCodeToPhoneNumber(telegramUser,UtilLists.userPhoneNumberMap.get(telegramUser.getChatId()));
+                        return;
                     }
                     Map<String,String> confirmCodeMap = UtilLists.confirmCodeMap.get(message.getChatId());
                     if (confirmCodeMap.get(code) != null){
@@ -175,14 +182,13 @@ public class TelegramService {
             }
         }
     }
-    public String confirmPhoneNumber(TelegramUser telegramUser,String phoneNumber) {
+    public void sendCodeToPhoneNumber(TelegramUser telegramUser, String phoneNumber) {
         telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_CONFIRM_CODE);
         BotUtils.send(sendMessageService.askConfirmCode(telegramUser));
         UtilLists.confirmCodeMap.put(telegramUser.getChatId(),
                 Map.of(String.valueOf(new Random().nextInt(9000)+1000),phoneNumber));
         System.out.println(UtilLists.confirmCodeMap.get(telegramUser.getChatId()));
 //                    System.out.println(smsService.sendSMS(phoneNumber));
-        return phoneNumber;
     }
     public void savePhoneNumber(TelegramUser telegramUser,String phoneNumber) {
         User user = userService.getByChatId(telegramUser.getChatId());

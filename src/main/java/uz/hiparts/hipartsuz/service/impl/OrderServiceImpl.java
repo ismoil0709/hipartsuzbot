@@ -3,7 +3,6 @@ package uz.hiparts.hipartsuz.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.OrderDto;
-import uz.hiparts.hipartsuz.exception.AlreadyExistsException;
 import uz.hiparts.hipartsuz.exception.InvalidArgumentException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.exception.NullOrEmptyException;
@@ -12,8 +11,12 @@ import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
+import uz.hiparts.hipartsuz.repository.ProductRepository;
+import uz.hiparts.hipartsuz.repository.UserRepository;
 import uz.hiparts.hipartsuz.service.OrderService;
-import uz.hiparts.hipartsuz.util.Validations;
+import uz.hiparts.hipartsuz.service.telegramService.SendMessageService;
+import uz.hiparts.hipartsuz.util.BotUtils;
+import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,13 +26,32 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final SendMessageService sendMessageService;
+
     @Override
-    public void create(Order order) {
-        if (order.getId() != null) {
-            if (orderRepository.findById(order.getId()).isPresent())
-                throw new AlreadyExistsException("Order id");
-        }
-        orderRepository.save(order);
+    public void create(OrderDto order) {
+        if (UtilLists.orderMap.get(order.getUserId()) == null)
+            throw new InvalidArgumentException("Please restart bot with /start");
+        Order existsOrder = UtilLists.orderMap.get(order.getUserId());
+        existsOrder.setPaymentType(order.getPaymentType());
+        existsOrder.setTime(order.getTime());
+        existsOrder.setComment(order.getComment());
+        existsOrder.setProducts(order.getProductIds().stream().map(
+                id-> productRepository.findById(id).orElseThrow(
+                        ()->new NotFoundException("Product")
+                )
+        ).toList());
+        existsOrder.setTotalPrice(order.getTotalPrice());
+        existsOrder.setActive(true);
+        existsOrder.setUser(userRepository.findByChatId(order.getUserId()).orElseThrow(
+                ()->new NotFoundException("User")
+        ));
+        existsOrder.getProducts().forEach(p-> p.setPrice(p.getPrice() - ((p.getPrice() * p.getDiscount()) / 100)));
+        BotUtils.send(sendMessageService.sendOrderDetails(
+                orderRepository.save(existsOrder)
+        ));
     }
     @Override
     public OrderDto getById(Long id) {
