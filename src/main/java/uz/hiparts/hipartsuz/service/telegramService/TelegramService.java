@@ -15,6 +15,7 @@ import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
+import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.service.BranchService;
 import uz.hiparts.hipartsuz.service.LangService;
@@ -51,9 +52,17 @@ public class TelegramService {
                     telegramUserService.save(telegramUser);
                     BotUtils.send(sendMessageService.firstStart(telegramUser));
                 } else {
+                    User user = userService.getByChatId(message.getChatId());
                     telegramUser = telegramUserService.getByChatId(message.getChatId());
+                    if (user != null) {
+                        if (user.getRole().equals(Role.ADMIN)) {
+                            BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                            return;
+                        }
+                    }
                     telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
                     BotUtils.send(sendMessageService.start(telegramUser));
+
                 }
             else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
                 BotUtils.send(sendMessageService.changeLang(message.getChatId()));
@@ -129,6 +138,7 @@ public class TelegramService {
                     .name(message.getFrom().getFirstName())
                     .username(message.getFrom().getUserName())
                     .lastPhoneNumber("")
+                    .role(Role.USER)
                     .build();
             userService.save(user);
         }

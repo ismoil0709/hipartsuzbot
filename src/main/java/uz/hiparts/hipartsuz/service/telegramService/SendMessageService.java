@@ -99,27 +99,24 @@ public class SendMessageService {
                         .build()
         );
         user = userService.getByChatId(telegramUser.getChatId());
-
-        ReplyKeyboardMarkup markup;
-        if (user.getRole().equals(Role.ADMIN)) {
+        ReplyKeyboardMarkup markup = KeyboardUtils.markup(
+                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
+        );
+        if (user != null && user.getRole().equals(Role.ADMIN)) {
             markup = KeyboardUtils.markup(
                     KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
                     KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false),
                     KeyboardUtils.button("Admin", false, false)
             );
-        } else {
-            markup = KeyboardUtils.markup(
-                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
-                    KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false)
-            );
-            BotUtils.send(
-                    SendMessage.builder()
-                            .chatId(telegramUser.getChatId())
-                            .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
-                            .replyMarkup(markup)
-                            .build()
-            );
         }
+        BotUtils.send(
+                SendMessage.builder()
+                        .chatId(telegramUser.getChatId())
+                        .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
+                        .replyMarkup(markup)
+                        .build()
+        );
     }
 
     public SendMessage sendCatalog(TelegramUser telegramUser) {
@@ -272,6 +269,18 @@ public class SendMessageService {
         return DeleteMessage.builder()
                 .chatId(chatId)
                 .messageId(messageId)
+                .build();
+    }
+
+    public SendMessage welcomeAdmin(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.WELCOME_ADMIN, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.markup(
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()), false, false),
+                        KeyboardUtils.button("Admin", false, false)
+                ))
                 .build();
     }
 }

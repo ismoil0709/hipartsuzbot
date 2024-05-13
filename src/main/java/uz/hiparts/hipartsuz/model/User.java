@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.ColumnDefault;
 import uz.hiparts.hipartsuz.model.enums.Role;
 
 @AllArgsConstructor
@@ -26,7 +25,6 @@ public class User {
     private String username;
     private String lastPhoneNumber;
     private Long chatId;
-    @ColumnDefault("USER")
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
 }
