@@ -71,13 +71,8 @@ public class TelegramService {
                 telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
                 BotUtils.send(sendMessageService.start(telegramUser));
             } else if (text.equals("Admin")) {
-                /*
-                todo behzod
-                todo shu ifdan keyin admin tanlashi kere
-                todo product qoshish , product o'chirish , admin qo'shish , hamma userlani ko'rish (inline button bo'ladi)
-                 uyogini oziz blas
-                 */
-                System.out.println("Hello");
+                telegramUser = telegramUserService.getByChatId(message.getChatId());
+                BotUtils.send(sendMessageService.adminPanel(telegramUser));
             }
         }
     }
@@ -158,7 +153,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.start(telegramUser));
                     return;
                 }
-                if (!Objects.equals(user.getLastPhoneNumber(), phoneNumber)) {
+                if (!Objects.equals(user == null ? null : user.getLastPhoneNumber(), phoneNumber)) {
                     sendCodeToPhoneNumber(telegramUser, phoneNumber);
                     return;
                 }

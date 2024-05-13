@@ -283,4 +283,18 @@ public class SendMessageService {
                 ))
                 .build();
     }
+
+    public SendMessage adminPanel(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.ADMIN_PANEL, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ADD_PRODUCT, telegramUser.getChatId()), Callback.ADD_PRODUCT.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.REMOVE_PRODUCT, telegramUser.getChatId()), Callback.REMOVE_PRODUCT.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ADD_ADMIN, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ALL_USERS, telegramUser.getChatId()), Callback.ALL_USERS.getCallback())
+                ))
+                .build();
+
+    }
 }

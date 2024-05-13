@@ -22,7 +22,12 @@ public enum Callback {
     BRANCH("branch-"),
     CATALOG("catalog"),
     LOCATION_CONFIRM_YES("location-confirm-yes"),
-    LOCATION_CONFIRM_NO("location-confirm-no");
+    LOCATION_CONFIRM_NO("location-confirm-no"),
+    ADD_PRODUCT("add-product"),
+    REMOVE_PRODUCT("remove-product"),
+    ADD_ADMIN("add-admin"),
+    ALL_USERS("show-users");
+
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();
     static {
