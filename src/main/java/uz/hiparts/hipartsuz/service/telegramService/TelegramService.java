@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
@@ -70,7 +71,7 @@ public class TelegramService {
                 telegramUser = telegramUserService.getByChatId(message.getChatId());
                 telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
                 BotUtils.send(sendMessageService.start(telegramUser));
-            } else if (text.equals("Admin")) {
+            } else if (text.equals("Admin") && userService.getByChatId(message.getChatId()).getRole().equals(Role.ADMIN)) {
                 telegramUser = telegramUserService.getByChatId(message.getChatId());
                 BotUtils.send(sendMessageService.adminPanel(telegramUser));
             }

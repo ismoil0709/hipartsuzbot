@@ -12,6 +12,6 @@ spring:
     show-sql: true
 bot:
   data:
-    ngrok_url : loved-basilisk-magnetic.ngrok-free.app
+    ngrok_url : chief-initially-gnat.ngrok-free.app
 server:
   port: 8080

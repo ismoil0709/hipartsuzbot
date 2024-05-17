@@ -4,10 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 import uz.hiparts.hipartsuz.model.Category;
-
-import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -18,6 +15,8 @@ public class ProductCreateUpdateDto {
     private Double price;
     @NotNull
     private Category category;
+    private String imgPath;
+    private Double discount;
     @NotBlank
     private String description;
     private boolean isActive;
