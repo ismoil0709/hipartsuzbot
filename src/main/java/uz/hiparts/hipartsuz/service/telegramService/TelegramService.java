@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
