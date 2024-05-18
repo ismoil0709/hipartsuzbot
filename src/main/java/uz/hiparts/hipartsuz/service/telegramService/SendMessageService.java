@@ -8,14 +8,12 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.dto.AddressDto;
-import uz.hiparts.hipartsuz.model.Branch;
-import uz.hiparts.hipartsuz.model.Order;
-import uz.hiparts.hipartsuz.model.TelegramUser;
-import uz.hiparts.hipartsuz.model.User;
+import uz.hiparts.hipartsuz.model.*;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
+import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
@@ -34,6 +32,7 @@ public class SendMessageService {
     private final TelegramUserService telegramUserService;
     private final UserService userService;
     private User user;
+    private final CategoryRepository categoryRepository;
 
     public SendMessage firstStart(TelegramUser telegramUser) {
         return SendMessage.builder()
@@ -289,12 +288,90 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.ADMIN_PANEL, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ADD_PRODUCT, telegramUser.getChatId()), Callback.ADD_PRODUCT.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.REMOVE_PRODUCT, telegramUser.getChatId()), Callback.REMOVE_PRODUCT.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ADD_ADMIN, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.ALL_USERS, telegramUser.getChatId()), Callback.ALL_USERS.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_PRODUCT, telegramUser.getChatId()), Callback.ADD_PRODUCT.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_REMOVE_PRODUCT, telegramUser.getChatId()), Callback.REMOVE_PRODUCT.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_ADMIN, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ALL_USERS, telegramUser.getChatId()), Callback.ALL_USERS.getCallback())
                 ))
                 .build();
 
+    }
+    public EditMessageText addProduct(TelegramUser telegramUser, Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_NAME, telegramUser.getChatId()))
+                .build();
+    }
+    public SendMessage writePrice(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_PRICE, telegramUser.getChatId()))
+                .build();
+    }
+    public SendMessage invalidPrice(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INVALID_PRICE, telegramUser.getChatId()))
+                .build();
+    }
+
+    public SendMessage writeDescription(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_DESCRIPTION, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.SKIP_DESCRIPTION, telegramUser.getChatId()), Callback.SKIP_DESCRIPTION.getCallback()))
+                )
+                .build();
+    }
+
+    public SendMessage chooseCategory(TelegramUser telegramUser) {
+        List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
+                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY.getCallback() + c.getId())).toList());
+        buttons.add(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NEW_CATEGORY, telegramUser.getChatId()), Callback.NEW_CATEGORY.getCallback()));
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.CHOOSE_CATEGORY, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.categoryMarkup(buttons))
+                .build();
+    }
+    public EditMessageText chooseCategory(TelegramUser telegramUser, Integer messageId) {
+        List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
+                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY.getCallback() + c.getId())).toList());
+        buttons.add(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NEW_CATEGORY, telegramUser.getChatId()), Callback.NEW_CATEGORY.getCallback()));
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.CHOOSE_CATEGORY, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.categoryMarkup(buttons))
+                .build();
+    }
+    public SendMessage sendImage(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_IMAGE, telegramUser.getChatId()))
+                .build();
+    }
+    public EditMessageText sendImage(TelegramUser telegramUser,Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_IMAGE, telegramUser.getChatId()))
+                .messageId(messageId)
+                .build();
+    }
+    public SendMessage inputDiscount(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_PRODUCT_DISCOUNT, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.SKIP_DISCOUNT, telegramUser.getChatId()), Callback.SKIP_DISCOUNT.getCallback())))
+                .build();
+    }
+    public EditMessageText writeCategory(TelegramUser telegramUser,Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_CATEGORY_NAME, telegramUser.getChatId()))
+                .build();
     }
 }

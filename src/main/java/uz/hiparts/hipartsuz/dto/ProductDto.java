@@ -7,7 +7,7 @@ import uz.hiparts.hipartsuz.model.Product;
 
 @AllArgsConstructor
 @Getter
-public class ProductDto {
+public class  ProductDto {
     private Long id;
     private String name;
     private Double price;

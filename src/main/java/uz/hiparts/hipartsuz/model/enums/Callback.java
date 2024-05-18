@@ -26,7 +26,11 @@ public enum Callback {
     ADD_PRODUCT("add-product"),
     REMOVE_PRODUCT("remove-product"),
     ADD_ADMIN("add-admin"),
-    ALL_USERS("show-users");
+    ALL_USERS("show-users"),
+    SKIP_DESCRIPTION("skip-description"),
+    CATEGORY("category-"),
+    NEW_CATEGORY("new-category"),
+    SKIP_DISCOUNT("skip-discount");
 
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();
