@@ -5,13 +5,13 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/hipartsuz
     username: postgres
-    password: ismoil_0709
+    password: <postgres_password>
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 bot:
   data:
-    ngrok_url : chief-initially-gnat.ngrok-free.app
+    ngrok_url : <ngrok_domain>
 server:
   port: 8080
