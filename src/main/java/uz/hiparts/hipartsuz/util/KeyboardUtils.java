@@ -27,7 +27,7 @@ public class KeyboardUtils {
     public static InlineKeyboardMarkup inlineMarkup(List<InlineKeyboardButton> buttons){
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         if (buttons.size() % 2 == 0){
-            for (int i = 0; i <= buttons.size(); i+=2) {
+            for (int i = 0; i < buttons.size(); i+=2) {
                 rows.add(List.of(buttons.get(i), buttons.get(i + 1)));
             }
         }else {

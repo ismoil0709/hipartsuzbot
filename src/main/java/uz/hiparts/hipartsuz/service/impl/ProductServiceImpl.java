@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+
     @Override
     public ProductDto create(ProductCreateUpdateDto dto) {
         if (productRepository.findByNameAndActive(dto.getName(), true).isPresent())
@@ -23,8 +24,11 @@ public class ProductServiceImpl implements ProductService {
         return new ProductDto(productRepository.save(Product.builder()
                 .isActive(true)
                 .name(dto.getName())
+                .description(dto.getDescription())
                 .price(dto.getPrice())
+                .imgPath(dto.getImgPath())
                 .category(dto.getCategory())
+                .discount(dto.getDiscount())
                 .build()));
 
     }
@@ -40,8 +44,9 @@ public class ProductServiceImpl implements ProductService {
                 .category(Validations.requireNonNullElse(dto.getCategory(), product.getCategory()))
                 .name(Validations.requireNonNullElse(dto.getName(), product.getName()))
                 .price(Validations.requireNonNullElse(dto.getPrice(), product.getPrice()))
-                .isActive(Validations.requireNonNullElse(dto.isActive(), product.isActive()))
                 .description(Validations.requireNonNullElse(dto.getDescription(), product.getDescription()))
+                .imgPath(Validations.requireNonNullElse(dto.getImgPath(), product.getImgPath()))
+                .discount(Validations.requireNonNullElse(dto.getDiscount(), product.getDiscount()))
                 .build()));
     }
 
