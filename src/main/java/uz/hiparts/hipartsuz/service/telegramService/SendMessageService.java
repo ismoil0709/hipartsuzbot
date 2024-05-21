@@ -40,26 +40,28 @@ public class SendMessageService {
     private final CategoryRepository categoryRepository;
 
     public SendMessage firstStart(TelegramUser telegramUser) {
+        Long chatId = telegramUser.getChatId();
         return SendMessage.builder()
-                .chatId(telegramUser.getChatId())
+                .chatId(chatId)
                 .text("Assalomu aleykum! Keling, avvaliga xizmat ko'rsatish tilini tanlab olaylik!")
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton("\uD83C\uDDF7\uD83C\uDDFA Russian", Callback.LANG_RU.getCallback()),
-                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDFF O'zbek tili", Callback.LANG_UZ.getCallback()),
-                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English", Callback.LANG_EN.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_RUSSIAN_LANGUAGE, chatId), Callback.LANG_RU.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_UZBEK_LANGUAGE, chatId), Callback.LANG_UZ.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ENGLISH_LANGUAGE, chatId), Callback.LANG_EN.getCallback())
                 ))
                 .build();
     }
 
     public EditMessageText changeLang(TelegramUser telegramUser, Integer messageId) {
+        Long chatId = telegramUser.getChatId();
         return EditMessageText.builder()
                 .messageId(messageId)
-                .chatId(telegramUser.getChatId())
+                .chatId(chatId)
                 .text(langService.getMessage(LangFields.CHOOSE_LANGUAGE, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton("\uD83C\uDDF7\uD83C\uDDFA Russian", Callback.LANG_RU.getCallback()),
-                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDFF O'zbek tili", Callback.LANG_UZ.getCallback()),
-                        KeyboardUtils.inlineButton("\uD83C\uDDFA\uD83C\uDDF8 English", Callback.LANG_EN.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_RUSSIAN_LANGUAGE, chatId), Callback.LANG_RU.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_UZBEK_LANGUAGE, chatId), Callback.LANG_UZ.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ENGLISH_LANGUAGE, chatId), Callback.LANG_EN.getCallback())
                 ))
                 .build();
     }
@@ -69,14 +71,14 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, chatId))
                 .chatId(chatId)
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, chatId), Callback.CHANGE_LANGUAGE.getCallback())
+                 KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, chatId), Callback.CHANGE_LANGUAGE.getCallback())
                 ))
                 .build();
     }
 
     public SendMessage start(TelegramUser telegramUser) {
         return SendMessage.builder()
-                .text(langService.getMessage(LangFields.PHONE_NUMBER, telegramUser.getChatId()))
+                .text(langService.getMessage(LangFields.INPUT_PHONE_NUMBER, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.markup(
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_CONTACT, telegramUser.getChatId()),
@@ -259,7 +261,7 @@ public class SendMessageService {
                     .append("\n\n");
         });
         if (order.getOrderType() == OrderType.DELIVERY) {
-            sb.append(langService.getMessage(LangFields.DELIVERY, chatId) + "\n\n1 x 20000 = 20000\n\n");
+            sb.append(langService.getMessage(LangFields.DELIVERY, chatId)).append("\n\n1 x 20000 = 20000\n\n");
             sb.append(langService.getMessage(LangFields.DELIVERY_PRICE, chatId)).append(" : ").append("20000\n");
         }
         sb.append(langService.getMessage(LangFields.PAYMENT_TYPE, chatId)).append(" : ").append(order.getPaymentType()).append("\n");
@@ -331,7 +333,7 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_DESCRIPTION, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.SKIP_DESCRIPTION, telegramUser.getChatId()), Callback.SKIP_DESCRIPTION.getCallback()))
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SKIP_DESCRIPTION, telegramUser.getChatId()), Callback.SKIP_DESCRIPTION.getCallback()))
                 )
                 .build();
     }
@@ -378,7 +380,7 @@ public class SendMessageService {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_DISCOUNT, telegramUser.getChatId()))
-                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.SKIP_DISCOUNT, telegramUser.getChatId()), Callback.SKIP_DISCOUNT.getCallback())))
+                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SKIP_DISCOUNT, telegramUser.getChatId()), Callback.SKIP_DISCOUNT.getCallback())))
                 .build();
     }
 
@@ -406,7 +408,7 @@ public class SendMessageService {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
-                .text(langService.getMessage(LangFields.INPUT_USERNAME, telegramUser.getChatId()))
+                .text(langService.getMessage(LangFields.INPUT_ADMIN_USERNAME, telegramUser.getChatId()))
                 .build();
     }
 
