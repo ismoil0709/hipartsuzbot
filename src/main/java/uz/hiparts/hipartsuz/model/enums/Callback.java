@@ -30,7 +30,9 @@ public enum Callback {
     SKIP_DESCRIPTION("skip-description"),
     CATEGORY("category-"),
     NEW_CATEGORY("new-category"),
-    SKIP_DISCOUNT("skip-discount");
+    SKIP_DISCOUNT("skip-discount"),
+    BY_USERNAME("admin-username"),
+    BY_PHONE_NUMBER("admin-phone-number");
 
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();

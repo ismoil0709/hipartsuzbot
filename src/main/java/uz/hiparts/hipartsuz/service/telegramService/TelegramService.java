@@ -163,7 +163,16 @@ public class TelegramService {
 
             }
             case ADD_ADMIN -> {
-
+                BotUtils.send(sendMessageService.setAdminMethod(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_METHOD_SET_ADMIN);
+            }
+            case BY_PHONE_NUMBER -> {
+                BotUtils.send(sendMessageService.writePhoneNumber(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_PHONE_NUMBER);
+            }
+            case BY_USERNAME -> {
+                BotUtils.send(sendMessageService.writeUsername(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_USERNAME);
             }
             case ALL_USERS -> {
             }
@@ -301,6 +310,22 @@ public class TelegramService {
                     UtilLists.productCreateUpdateDtoMap.put(message.getChatId(),productCreateUpdateDto);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_IMAGE);
                     BotUtils.send(sendMessageService.sendImage(telegramUser));
+                }
+            }
+            case INPUT_ADMIN_USERNAME -> {
+                if (message.hasText()){
+                    String username = message.getText();
+                    userService.setAdminByUsername(username);
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                }
+            }
+            case INPUT_ADMIN_PHONE_NUMBER -> {
+                if (message.hasText()){
+                    String phoneNumber = message.getText();
+                    userService.setAdminByPhoneNumber(phoneNumber);
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
         }
