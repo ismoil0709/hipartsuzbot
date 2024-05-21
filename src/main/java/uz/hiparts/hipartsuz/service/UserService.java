@@ -11,4 +11,6 @@ public interface UserService {
     void delete(Long id);
     List<User> getAll();
     User getByChatId(Long chatId);
+    void setAdminByPhoneNumber(String phoneNumber);
+    void setAdminByUsername(String username);
 }

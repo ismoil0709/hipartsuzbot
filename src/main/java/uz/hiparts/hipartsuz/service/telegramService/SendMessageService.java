@@ -8,7 +8,10 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.dto.AddressDto;
-import uz.hiparts.hipartsuz.model.*;
+import uz.hiparts.hipartsuz.model.Branch;
+import uz.hiparts.hipartsuz.model.Order;
+import uz.hiparts.hipartsuz.model.TelegramUser;
+import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
@@ -372,6 +375,31 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_CATEGORY_NAME, telegramUser.getChatId()))
+                .build();
+    }
+    public EditMessageText setAdminMethod(TelegramUser telegramUser, Integer messageId) {
+            return EditMessageText.builder()
+                    .chatId(telegramUser.getChatId())
+                    .messageId(messageId)
+                    .text(langService.getMessage(LangFields.CHOOSE_SET_ADMIN_METHOD, telegramUser.getChatId()))
+                    .replyMarkup(KeyboardUtils.inlineMarkup(
+                            KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.BY_PHONE_NUMBER.getCallback()),
+                            KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.BY_USERNAME.getCallback())
+                    ))
+                    .build();
+    }
+    public EditMessageText writeUsername(TelegramUser telegramUser,Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_USERNAME, telegramUser.getChatId()))
+                .build();
+    }
+    public EditMessageText writePhoneNumber(TelegramUser telegramUser,Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_PHONE_NUMBER, telegramUser.getChatId()))
                 .build();
     }
 }
