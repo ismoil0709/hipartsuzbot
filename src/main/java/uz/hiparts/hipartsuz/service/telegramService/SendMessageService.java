@@ -2,12 +2,14 @@ package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.dto.AddressDto;
+import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
@@ -18,15 +20,14 @@ import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.LangService;
+import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
-import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.KeyboardUtils;
+import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class SendMessageService {
     private final LangService langService;
     private final TelegramUserService telegramUserService;
     private final UserService userService;
+    private final ProductService productService;
     private User user;
     private final CategoryRepository categoryRepository;
 
@@ -85,7 +87,7 @@ public class SendMessageService {
                 .build();
     }
 
-    public void setLang(String data, Integer messageId, TelegramUser telegramUser) {
+    public SendMessage setLang(String data, TelegramUser telegramUser) {
         String lang = data.split("-")[1];
         if (lang.equals("ru"))
             telegramUser.setLang("ru");
@@ -94,12 +96,6 @@ public class SendMessageService {
         if (lang.equals("en"))
             telegramUser.setLang("en");
         telegramUserService.save(telegramUser);
-        BotUtils.send(
-                DeleteMessage.builder()
-                        .chatId(telegramUser.getChatId())
-                        .messageId(messageId)
-                        .build()
-        );
         user = userService.getByChatId(telegramUser.getChatId());
         ReplyKeyboardMarkup markup = KeyboardUtils.markup(
                 KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()), false, false),
@@ -112,13 +108,13 @@ public class SendMessageService {
                     KeyboardUtils.button("Admin", false, false)
             );
         }
-        BotUtils.send(
-                SendMessage.builder()
-                        .chatId(telegramUser.getChatId())
-                        .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
-                        .replyMarkup(markup)
-                        .build()
-        );
+
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, telegramUser.getChatId()))
+                .replyMarkup(markup)
+                .build();
+
     }
 
     public SendMessage sendCatalog(TelegramUser telegramUser) {
@@ -243,27 +239,35 @@ public class SendMessageService {
     }
 
     public SendMessage sendOrderDetails(Order order) {
-        StringBuilder sb = new StringBuilder("Информация о вашем заказе\n\n");
+        Long chatId = order.getUser().getChatId();
+        StringBuilder sb = new StringBuilder(langService.getMessage(LangFields.ORDER_INFO, chatId) + "\n\n");
         if (order.getOrderType() == OrderType.DELIVERY)
-            sb.append("Адрес доставки : ").append(order.getAddress()).append("\n\n");
-        Map<Long, Long> map = new HashMap<>();
-        order.getProducts().forEach(p -> map.put(p.getId(), map.get(p.getId()) != null ? map.get(p.getId()) + 1 : 1));
-        order.getProducts().forEach(p -> sb.append(p.getName())
-                .append("\n")
-                .append(map.get(p.getId()))
-                .append(" x ")
-                .append(Math.round(p.getPrice()))
-                .append(" = ")
-                .append(Math.round(order.getTotalPrice()))
-                .append("\n\n")
-        );
-        sb.append("ДОСТАВКА\n\n1 x 20000 = 20000\n\n");
-        sb.append("Способ оплаты : ").append(order.getOrderType().name()).append("\n");
-        sb.append("Цена доставки : ").append("20000\n");
-        sb.append("Итоговая цена : ").append(Math.round(order.getTotalPrice()));
+            sb.append(langService.getMessage(LangFields.DELIVERY_ADDRESS, chatId)).append(" : ").append(order.getAddress()).append("\n\n");
+        else {
+            sb.append(langService.getMessage(LangFields.CHOSEN_BRANCH, chatId)).append(" : ").append(order.getBranch()).append("\n\n");
+            sb.append(langService.getMessage(LangFields.TIME_RECEIVE_ORDER, chatId)).append(" : ").append(order.getTime()).append("\n\n");
+        }
+        order.getProductQuantities().forEach(p -> {
+            ProductDto product = productService.getById(p.getProductId());
+            sb.append(product.getName())
+                    .append("\n")
+                    .append(p.getQuantity())
+                    .append(" x ")
+                    .append(Math.round(product.getPrice()))
+                    .append(" = ")
+                    .append(Math.round(p.getQuantity() * product.getPrice()))
+                    .append("\n\n");
+        });
+        if (order.getOrderType() == OrderType.DELIVERY) {
+            sb.append(langService.getMessage(LangFields.DELIVERY, chatId) + "\n\n1 x 20000 = 20000\n\n");
+            sb.append(langService.getMessage(LangFields.DELIVERY_PRICE, chatId)).append(" : ").append("20000\n");
+        }
+        sb.append(langService.getMessage(LangFields.PAYMENT_TYPE, chatId)).append(" : ").append(order.getPaymentType()).append("\n");
+        sb.append(langService.getMessage(LangFields.TOTAL_PRICE, chatId)).append(" : ").append(Math.round(order.getTotalPrice()));
         return SendMessage.builder()
                 .text(sb.toString())
-                .chatId(order.getUser().getChatId())
+                .chatId(chatId)
+                .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
 
@@ -299,6 +303,7 @@ public class SendMessageService {
                 .build();
 
     }
+
     public EditMessageText addProduct(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
@@ -306,12 +311,14 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_NAME, telegramUser.getChatId()))
                 .build();
     }
+
     public SendMessage writePrice(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_PRICE, telegramUser.getChatId()))
                 .build();
     }
+
     public SendMessage invalidPrice(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
@@ -339,6 +346,7 @@ public class SendMessageService {
                 .replyMarkup(KeyboardUtils.categoryMarkup(buttons))
                 .build();
     }
+
     public EditMessageText chooseCategory(TelegramUser telegramUser, Integer messageId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
                 .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY.getCallback() + c.getId())).toList());
@@ -350,19 +358,22 @@ public class SendMessageService {
                 .replyMarkup(KeyboardUtils.categoryMarkup(buttons))
                 .build();
     }
+
     public SendMessage sendImage(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_IMAGE, telegramUser.getChatId()))
                 .build();
     }
-    public EditMessageText sendImage(TelegramUser telegramUser,Integer messageId) {
+
+    public EditMessageText sendImage(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_PRODUCT_IMAGE, telegramUser.getChatId()))
                 .messageId(messageId)
                 .build();
     }
+
     public SendMessage inputDiscount(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
@@ -370,36 +381,64 @@ public class SendMessageService {
                 .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.SKIP_DISCOUNT, telegramUser.getChatId()), Callback.SKIP_DISCOUNT.getCallback())))
                 .build();
     }
-    public EditMessageText writeCategory(TelegramUser telegramUser,Integer messageId) {
+
+    public EditMessageText writeCategory(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_CATEGORY_NAME, telegramUser.getChatId()))
                 .build();
     }
+
     public EditMessageText setAdminMethod(TelegramUser telegramUser, Integer messageId) {
-            return EditMessageText.builder()
-                    .chatId(telegramUser.getChatId())
-                    .messageId(messageId)
-                    .text(langService.getMessage(LangFields.CHOOSE_SET_ADMIN_METHOD, telegramUser.getChatId()))
-                    .replyMarkup(KeyboardUtils.inlineMarkup(
-                            KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.BY_PHONE_NUMBER.getCallback()),
-                            KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.BY_USERNAME.getCallback())
-                    ))
-                    .build();
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.CHOOSE_SET_ADMIN_METHOD, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.BY_PHONE_NUMBER.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.BY_USERNAME.getCallback())
+                ))
+                .build();
     }
-    public EditMessageText writeUsername(TelegramUser telegramUser,Integer messageId) {
+
+    public EditMessageText writeUsername(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_USERNAME, telegramUser.getChatId()))
                 .build();
     }
-    public EditMessageText writePhoneNumber(TelegramUser telegramUser,Integer messageId) {
+
+    public EditMessageText writePhoneNumber(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_PHONE_NUMBER, telegramUser.getChatId()))
+                .build();
+    }
+
+    public EditMessageText writeCurrency(TelegramUser telegramUser, Integer messageId) {
+        String message = langService.getMessage(LangFields.INPUT_CURRENCY, telegramUser.getChatId());
+        message = message.replaceAll("\\?", UtilLists.currency);
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(message)
+                .build();
+    }
+
+    public SendMessage successfully(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text("✅")
+                .build();
+    }
+
+    public SendMessage invalidConfirmCode(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INVALID_CONFIRM_CODE, telegramUser.getChatId()))
                 .build();
     }
 }

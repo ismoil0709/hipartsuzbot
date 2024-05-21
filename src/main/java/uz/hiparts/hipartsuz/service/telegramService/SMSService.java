@@ -1,31 +1,52 @@
-//package uz.hiparts.hipartsuz.service.telegramService;
-//
-//import com.twilio.Twilio;
-//import com.twilio.rest.api.v2010.account.Message;
-//import com.twilio.type.PhoneNumber;
-//import jakarta.annotation.PostConstruct;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//public class SMSService {
-//    @Value("${twilio.account.sid}")
-//    private String ACCOUNT_SID;
-//    @Value("${twilio.account.token}")
-//    private String ACCOUNT_TOKEN;
-//    @Value("${twilio.account.number}")
-//    private String ACCOUNT_OUTING_NUMBER;
-//
-//    @PostConstruct
-//    public void init() {
-//        Twilio.init(ACCOUNT_SID, ACCOUNT_TOKEN);
-//    }
-//
-//    public String sendSMS(String phoneNumber) {
-//        return Message.creator(
-//                new PhoneNumber(phoneNumber),
-//                new PhoneNumber(""),
-//                "salom"
-//        ).create().getStatus().toString();
-//    }
-//}
+package uz.hiparts.hipartsuz.service.telegramService;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import uz.hiparts.hipartsuz.model.Order;
+import uz.hiparts.hipartsuz.model.TelegramUser;
+import uz.hiparts.hipartsuz.model.User;
+import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.service.TelegramUserService;
+import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.util.BotUtils;
+import uz.hiparts.hipartsuz.util.UtilLists;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+@Service
+@RequiredArgsConstructor
+public class SMSService {
+    private final SendMessageService sendMessageService;
+    private final UserService userService;
+    private final TelegramUserService telegramUserService;
+    private Map<Long,String> phoneNumbers = new HashMap<>();
+    private Map<Long,Integer> confirmCodes = new HashMap<>();
+    public void send(TelegramUser telegramUser, String phoneNumber) {
+        int code = new Random().nextInt(9000) + 1000;
+        phoneNumbers.put(telegramUser.getChatId(),phoneNumber);
+        confirmCodes.put(telegramUser.getChatId(),code);
+        System.out.println(code);
+        BotUtils.send(sendMessageService.askConfirmCode(telegramUser));
+        telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_CONFIRM_CODE);
+    }
+    public void send(TelegramUser telegramUser) {
+        send(telegramUser,phoneNumbers.get(telegramUser.getChatId()));
+    }
+
+    public boolean check(TelegramUser telegramUser,int code){
+        return confirmCodes.get(telegramUser.getChatId()).equals(code);
+    }
+
+    public void savePhoneNumber(TelegramUser telegramUser) {
+        String phoneNumber = phoneNumbers.get(telegramUser.getChatId());
+        User user = userService.getByChatId(telegramUser.getChatId());
+        user.setLastPhoneNumber(phoneNumber);
+        userService.save(user);
+        UtilLists.orderMap.put(telegramUser.getChatId(), Order.builder().phoneNumber(phoneNumber).build());
+        BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber,telegramUser));
+        BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
+        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+    }
+}

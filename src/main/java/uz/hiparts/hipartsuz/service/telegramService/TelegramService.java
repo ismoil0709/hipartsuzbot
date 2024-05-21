@@ -12,6 +12,7 @@ import uz.hiparts.hipartsuz.dto.ProductCreateUpdateDto;
 import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.model.Order;
+import uz.hiparts.hipartsuz.model.Product;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
@@ -19,6 +20,7 @@ import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.repository.ProductRepository;
 import uz.hiparts.hipartsuz.service.BranchService;
 import uz.hiparts.hipartsuz.service.CategoryService;
 import uz.hiparts.hipartsuz.service.LangService;
@@ -30,9 +32,7 @@ import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -44,51 +44,57 @@ public class TelegramService {
     private final BranchService branchService;
     private final CategoryService categoryService;
     private final ProductService productService;
-//    private final SMSService smsService;
+    private final ProductRepository productRepository;
+    private final SMSService smsService;
 
     public void handleMessage(Message message) {
-        if (message.hasText()) {
-            TelegramUser telegramUser = new TelegramUser();
-            String text = message.getText();
-            if (text.equals("/start"))
-                if (telegramUserService.getByChatId(message.getChatId()) == null) {
-                    telegramUser.setChatId(message.getChatId());
-                    telegramUser.setLang("uz");
-                    telegramUser.setState(UserState.START);
-                    telegramUserService.save(telegramUser);
-                    BotUtils.send(sendMessageService.firstStart(telegramUser));
-                } else {
-                    User user = userService.getByChatId(message.getChatId());
-                    telegramUser = telegramUserService.getByChatId(message.getChatId());
-                    if (user != null) {
-                        if (user.getRole().equals(Role.ADMIN)) {
-                            BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
-                            telegramUserService.setState(message.getChatId(), UserState.START);
-                            return;
+            if (message.hasText()) {
+                TelegramUser telegramUser = new TelegramUser();
+                String text = message.getText();
+                if (text.equals("/start")) {
+                    if (telegramUserService.getByChatId(message.getChatId()) == null) {
+                        telegramUser.setChatId(message.getChatId());
+                        telegramUser.setLang("uz");
+                        telegramUser.setState(UserState.START);
+                        telegramUserService.save(telegramUser);
+                        BotUtils.send(sendMessageService.firstStart(telegramUser));
+                    } else {
+                        User user = userService.getByChatId(message.getChatId());
+                        telegramUser = telegramUserService.getByChatId(message.getChatId());
+                        if (user != null) {
+                            if (user.getRole().equals(Role.ADMIN)) {
+                                BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                                telegramUserService.setState(message.getChatId(), UserState.START);
+                                return;
+                            }
                         }
+                        telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
+                        BotUtils.send(sendMessageService.start(telegramUser));
+
                     }
+                }
+                else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
+                    telegramUserService.setState(message.getChatId(),UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.changeLang(message.getChatId()));
+                } else if (text.equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))) {
+                    telegramUser = telegramUserService.getByChatId(message.getChatId());
                     telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
                     BotUtils.send(sendMessageService.start(telegramUser));
-
+                } else if (text.equals("Admin") && userService.getByChatId(message.getChatId()).getRole().equals(Role.ADMIN)) {
+                    telegramUserService.setState(message.getChatId(),UserState.DEFAULT);
+                    telegramUser = telegramUserService.getByChatId(message.getChatId());
+                    BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 }
-            else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
-                BotUtils.send(sendMessageService.changeLang(message.getChatId()));
-            } else if (text.equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))) {
-                telegramUser = telegramUserService.getByChatId(message.getChatId());
-                telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
-                BotUtils.send(sendMessageService.start(telegramUser));
-            } else if (text.equals("Admin") && userService.getByChatId(message.getChatId()).getRole().equals(Role.ADMIN)) {
-                telegramUser = telegramUserService.getByChatId(message.getChatId());
-                BotUtils.send(sendMessageService.adminPanel(telegramUser));
             }
         }
-    }
 
     public void handleCallbackQuery(CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
         TelegramUser telegramUser = telegramUserService.getByChatId(callbackQuery.getMessage().getChatId());
         if (data.startsWith("lang")) {
-            sendMessageService.setLang(data, callbackQuery.getMessage().getMessageId(), telegramUser);
+            BotUtils.send(sendMessageService.deleteMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
+            BotUtils.send(sendMessageService.setLang(data,telegramUser));
+            return;
         }
         if (data.startsWith(Callback.BRANCH.getCallback())) {
             Long branchId = Long.parseLong(data.split("-")[1]);
@@ -159,6 +165,10 @@ public class TelegramService {
                 BotUtils.send(sendMessageService.writeCategory(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_CATEGORY_NAME);
             }
+            case CHANGE_CURRENCY -> {
+                BotUtils.send(sendMessageService.writeCurrency(telegramUser,callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(callbackQuery.getMessage().getChatId(),UserState.INPUT_CURRENCY);
+            }
             case REMOVE_PRODUCT -> {
 
             }
@@ -197,23 +207,39 @@ public class TelegramService {
                 String phoneNumber;
                 if (message.hasContact()) {
                     phoneNumber = message.getContact().getPhoneNumber();
-                    if (!phoneNumber.startsWith("+")) {
-                        phoneNumber = "+" + phoneNumber;
-                    }
-                } else {
-                    phoneNumber = "+998" + message.getText();
-                }
+                    if (!phoneNumber.startsWith("+")) phoneNumber = "+" + phoneNumber;
+                } else phoneNumber = "+998" + message.getText();
                 if (!phoneNumber.matches(Regex.PHONE_NUMBER)) {
                     telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PHONE_NUMBER);
                     BotUtils.send(sendMessageService.start(telegramUser));
                     return;
                 }
                 if (!Objects.equals(user == null ? null : user.getLastPhoneNumber(), phoneNumber)) {
-                    sendCodeToPhoneNumber(telegramUser, phoneNumber);
+                    smsService.send(telegramUser,phoneNumber);
                     return;
                 }
-                UtilLists.userPhoneNumberMap.put(telegramUser.getChatId(), phoneNumber);
-                savePhoneNumber(telegramUser, phoneNumber);
+                BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber,telegramUser));
+                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
+                telegramUserService.setState(message.getChatId(),UserState.DEFAULT);
+            }
+            case INPUT_CONFIRM_CODE -> {
+                if (message.hasText()) {
+                    String code = message.getText();
+                    if (code.equals(langService.getMessage(LangFields.BUTTON_CHANGE_PHONE_NUMBER,message.getChatId()))){
+                        BotUtils.send(sendMessageService.start(telegramUser));
+                        telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
+                    }else if(code.equals(langService.getMessage(LangFields.BUTTON_RESEND_CODE,message.getChatId()))){
+                        smsService.send(telegramUser);
+                    }else{
+                        try {
+                            if (smsService.check(telegramUser,Integer.parseInt(code)))
+                                smsService.savePhoneNumber(telegramUser);
+                            else BotUtils.send(sendMessageService.invalidConfirmCode(telegramUser));
+                        }catch (NumberFormatException e){
+                            BotUtils.send(sendMessageService.invalidConfirmCode(telegramUser));
+                        }
+                    }
+                }else BotUtils.send(sendMessageService.invalidConfirmCode(telegramUser));
             }
             case INPUT_LOCATION -> {
                 if (message.hasLocation()) {
@@ -230,24 +256,6 @@ public class TelegramService {
                     } else BotUtils.send(sendMessageService.invalidShippingAddress(telegramUser));
                 } else BotUtils.send(sendMessageService.invalidShippingAddress(telegramUser));
             }
-            case INPUT_CONFIRM_CODE -> {
-                if (message.hasText()) {
-                    String code = message.getText();
-                    if (code.equals(langService.getMessage(LangFields.BUTTON_CHANGE_PHONE_NUMBER, message.getChatId()))) {
-                        telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PHONE_NUMBER);
-                        BotUtils.send(sendMessageService.start(telegramUser));
-                        return;
-                    } else if (code.equals(langService.getMessage(LangFields.BUTTON_RESEND_CODE, message.getChatId()))) {
-                        sendCodeToPhoneNumber(telegramUser, UtilLists.userPhoneNumberMap.get(telegramUser.getChatId()));
-                        return;
-                    }
-                    Map<String, String> confirmCodeMap = UtilLists.confirmCodeMap.get(message.getChatId());
-                    if (confirmCodeMap.get(code) != null) {
-                        String number = confirmCodeMap.get(code);
-                        savePhoneNumber(telegramUser, number);
-                    } else System.out.println("Invalid");
-                }
-            }
             case INPUT_PRODUCT_NAME -> {
                 if (message.hasText()) {
                     String productName = message.getText();
@@ -262,7 +270,9 @@ public class TelegramService {
                     String productPrice = message.getText();
                     ProductCreateUpdateDto productDto = UtilLists.productCreateUpdateDtoMap.get(message.getChatId());
                     if (productPrice.matches(Regex.PRICE)) {
-                        productDto.setPrice(Double.valueOf(productPrice));
+                        double price = Double.parseDouble(productPrice);
+                        double currency = Double.parseDouble(UtilLists.currency.isEmpty() ? "0" : UtilLists.currency);
+                        productDto.setPrice(price * currency);
                         UtilLists.productCreateUpdateDtoMap.put(message.getChatId(), productDto);
                         telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_DESCRIPTION);
                         BotUtils.send(sendMessageService.writeDescription(telegramUser));
@@ -317,6 +327,7 @@ public class TelegramService {
                     String username = message.getText();
                     userService.setAdminByUsername(username);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
@@ -325,29 +336,28 @@ public class TelegramService {
                     String phoneNumber = message.getText();
                     userService.setAdminByPhoneNumber(phoneNumber);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                }
+            }
+            case INPUT_CURRENCY -> {
+                if (message.hasText()) {
+                    String currency = message.getText();
+                    List<Product> all = productRepository.findAll();
+                    all.forEach(
+                            p-> p.setPrice((p.getPrice() / Double.parseDouble(UtilLists.currency == null || UtilLists.currency.isEmpty() ? "0" : UtilLists.currency)) * Double.parseDouble(currency))
+                    );
+                    productRepository.saveAll(all);
+                    UtilLists.currency = currency;
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
+                    BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 }
             }
         }
     }
-
-    public void sendCodeToPhoneNumber(TelegramUser telegramUser, String phoneNumber) {
-        telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_CONFIRM_CODE);
-        BotUtils.send(sendMessageService.askConfirmCode(telegramUser));
-        UtilLists.confirmCodeMap.put(telegramUser.getChatId(),
-                Map.of(String.valueOf(new Random().nextInt(9000) + 1000), phoneNumber));
-        System.out.println(UtilLists.confirmCodeMap.get(telegramUser.getChatId()));
-//                    System.out.println(smsService.sendSMS(phoneNumber));
-    }
-
-    public void savePhoneNumber(TelegramUser telegramUser, String phoneNumber) {
-        User user = userService.getByChatId(telegramUser.getChatId());
-        user.setLastPhoneNumber(phoneNumber);
-        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-        userService.save(user);
-        UtilLists.orderMap.put(telegramUser.getChatId(), Order.builder().phoneNumber(phoneNumber).build());
-        BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber, telegramUser));
-        BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
-        UtilLists.confirmCodeMap.put(telegramUser.getChatId(), null);
+    public boolean isOverrideCommand(Message message) {
+        return message.getText().equals("/start") || message.getText().equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))
+                || message.getText().equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))
+                || message.getText().equals("Admin");
     }
 }
