@@ -48,6 +48,6 @@ public class Order {
     private String phoneNumber;
     private String comment;
     private boolean active;
-    @OneToMany
+    @Transient
     private List<ProductQuantity> productQuantities;
 }

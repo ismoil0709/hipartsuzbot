@@ -1,8 +1,11 @@
 package uz.hiparts.hipartsuz.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,9 +13,7 @@ import lombok.*;
 @Setter
 @ToString
 @Builder
-@Entity
 public class ProductQuantity {
-    @Id
     private Long productId;
     private Integer quantity;
 }
