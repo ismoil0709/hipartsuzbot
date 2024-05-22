@@ -132,7 +132,7 @@ public class TelegramService {
             case DELIVERY, LOCATION_CONFIRM_NO -> {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_LOCATION);
                 BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
-                BotUtils.send(sendMessageService.askDeliveryLocation(telegramUser));
+                    BotUtils.send(sendMessageService.askDeliveryLocation(telegramUser));
             }
             case PICK_UP -> {
                 List<Branch> branches = branchService.getAll();
@@ -218,9 +218,7 @@ public class TelegramService {
                     smsService.send(telegramUser,phoneNumber);
                     return;
                 }
-                BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber,telegramUser));
-                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
-                telegramUserService.setState(message.getChatId(),UserState.DEFAULT);
+                smsService.savePhoneNumber(telegramUser);
             }
             case INPUT_CONFIRM_CODE -> {
                 if (message.hasText()) {
