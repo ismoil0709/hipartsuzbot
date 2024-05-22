@@ -50,9 +50,8 @@ public class OrderServiceImpl implements OrderService {
                 ()->new NotFoundException("User")
         ));
         existsOrder.getProducts().forEach(p-> p.setPrice(p.getPrice() - ((p.getPrice() * p.getDiscount()) / 100)));
-        BotUtils.send(sendMessageService.sendOrderDetails(
-                orderRepository.save(existsOrder)
-        ));
+        BotUtils.send(sendMessageService.sendOrderDetails(existsOrder));
+        BotUtils.send(sendMessageService.sendOrderConfirmation(existsOrder));
     }
     @Override
     public OrderDto getById(Long id) {

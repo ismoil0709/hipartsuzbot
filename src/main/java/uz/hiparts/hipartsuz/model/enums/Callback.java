@@ -24,17 +24,18 @@ public enum Callback {
     LOCATION_CONFIRM_YES("location-confirm-yes"),
     LOCATION_CONFIRM_NO("location-confirm-no"),
     ADD_PRODUCT("add-product"),
-    REMOVE_PRODUCT("remove-product"),
+    REMOVE_ADMIN("remove-admin"),
     ADD_ADMIN("add-admin"),
-    ALL_USERS("show-users"),
     SKIP_DESCRIPTION("skip-description"),
     CATEGORY("category-"),
     NEW_CATEGORY("new-category"),
     SKIP_DISCOUNT("skip-discount"),
     BY_USERNAME("admin-username"),
     BY_PHONE_NUMBER("admin-phone-number"),
-    CHANGE_CURRENCY("change-currency");
-
+    CHANGE_CURRENCY("change-currency"),
+    ORDER_CONFIRM_YES("order-confirm-yes"),
+    ORDER_CONFIRM_NO("order-confirm-no"),
+    BOT_SETTINGS("bot-settings"),;
 
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();

@@ -169,8 +169,7 @@ public class TelegramService {
                 BotUtils.send(sendMessageService.writeCurrency(telegramUser,callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(callbackQuery.getMessage().getChatId(),UserState.INPUT_CURRENCY);
             }
-            case REMOVE_PRODUCT -> {
-
+            case REMOVE_ADMIN -> {
             }
             case ADD_ADMIN -> {
                 BotUtils.send(sendMessageService.setAdminMethod(telegramUser, callbackQuery.getMessage().getMessageId()));
@@ -184,7 +183,18 @@ public class TelegramService {
                 BotUtils.send(sendMessageService.writeUsername(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_USERNAME);
             }
-            case ALL_USERS -> {
+            case ORDER_CONFIRM_NO -> {
+                BotUtils.send(sendMessageService.cancelOrder(telegramUser,callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(),null);
+            }
+            case ORDER_CONFIRM_YES -> {
+                BotUtils.send(sendMessageService.confirmOrder(telegramUser,callbackQuery.getMessage().getMessageId(),UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            }
+            case BOT_SETTINGS -> {
+                BotUtils.send(sendMessageService.botSettings(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
         }
     }
