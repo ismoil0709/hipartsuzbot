@@ -300,8 +300,9 @@ public class SendMessageService {
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_PRODUCT, telegramUser.getChatId()), Callback.ADD_PRODUCT.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_REMOVE_PRODUCT, telegramUser.getChatId()), Callback.REMOVE_PRODUCT.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_ADMIN, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ALL_USERS, telegramUser.getChatId()), Callback.ALL_USERS.getCallback())
-                ))
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ALL_USERS, telegramUser.getChatId()), Callback.ALL_USERS.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_CURRENCY, telegramUser.getChatId()), Callback.CHANGE_CURRENCY.getCallback()))
+                )
                 .build();
 
     }

@@ -218,7 +218,7 @@ public class TelegramService {
                     smsService.send(telegramUser,phoneNumber);
                     return;
                 }
-                smsService.savePhoneNumber(telegramUser);
+                smsService.savePhoneNumber(telegramUser,phoneNumber);
             }
             case INPUT_CONFIRM_CODE -> {
                 if (message.hasText()) {

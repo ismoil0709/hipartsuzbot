@@ -21,8 +21,8 @@ public class SMSService {
     private final SendMessageService sendMessageService;
     private final UserService userService;
     private final TelegramUserService telegramUserService;
-    private Map<Long,String> phoneNumbers = new HashMap<>();
-    private Map<Long,Integer> confirmCodes = new HashMap<>();
+    private final Map<Long,String> phoneNumbers = new HashMap<>();
+    private final Map<Long,Integer> confirmCodes = new HashMap<>();
     public void send(TelegramUser telegramUser, String phoneNumber) {
         int code = new Random().nextInt(9000) + 1000;
         phoneNumbers.put(telegramUser.getChatId(),phoneNumber);
@@ -38,7 +38,12 @@ public class SMSService {
     public boolean check(TelegramUser telegramUser,int code){
         return confirmCodes.get(telegramUser.getChatId()).equals(code);
     }
-
+    public void savePhoneNumber(TelegramUser telegramUser,String phoneNumber) {
+        UtilLists.orderMap.put(telegramUser.getChatId(), Order.builder().phoneNumber(phoneNumber).build());
+        BotUtils.send(sendMessageService.sendPhoneNumber(phoneNumber,telegramUser));
+        BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
+        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+    }
     public void savePhoneNumber(TelegramUser telegramUser) {
         String phoneNumber = phoneNumbers.get(telegramUser.getChatId());
         User user = userService.getByChatId(telegramUser.getChatId());
