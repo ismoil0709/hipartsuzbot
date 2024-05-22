@@ -43,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
                         ()->new NotFoundException("Product")
                 )
         ).toList());
+        existsOrder.setProductQuantities(order.getProductQuantities());
         existsOrder.setTotalPrice(order.getTotalPrice());
         existsOrder.setActive(true);
         existsOrder.setUser(userRepository.findByChatId(order.getUserId()).orElseThrow(
