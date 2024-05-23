@@ -30,11 +30,14 @@ public enum Callback {
     CATEGORY("category-"),
     NEW_CATEGORY("new-category"),
     SKIP_DISCOUNT("skip-discount"),
-    BY_USERNAME("admin-username"),
-    BY_PHONE_NUMBER("admin-phone-number"),
+    SET_BY_USERNAME("admin-username-set"),
+    SET_BY_PHONE_NUMBER("admin-phone-number-set"),
+    REMOVE_BY_USERNAME("admin-username-remove"),
+    REMOVE_BY_PHONE_NUMBER("admin-phone-number-remove"),
     CHANGE_CURRENCY("change-currency"),
     ORDER_CONFIRM_YES("order-confirm-yes"),
     ORDER_CONFIRM_NO("order-confirm-no"),
+
     BOT_SETTINGS("bot-settings"),;
 
     private String callback;

@@ -418,8 +418,19 @@ public class SendMessageService {
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.CHOOSE_SET_ADMIN_METHOD, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.BY_PHONE_NUMBER.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.BY_USERNAME.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.SET_BY_PHONE_NUMBER.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.SET_BY_USERNAME.getCallback())
+                ))
+                .build();
+    }
+    public EditMessageText removeAdminMethod(TelegramUser telegramUser, Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.CHOOSE_REMOVE_ADMIN_METHOD, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.REMOVE_BY_PHONE_NUMBER.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.REMOVE_BY_USERNAME.getCallback())
                 ))
                 .build();
     }
@@ -436,7 +447,7 @@ public class SendMessageService {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
-                .text(langService.getMessage(LangFields.INPUT_PHONE_NUMBER, telegramUser.getChatId()))
+                .text(langService.getMessage(LangFields.INPUT_ADMIN_PHONE_NUMBER, telegramUser.getChatId()))
                 .build();
     }
 
