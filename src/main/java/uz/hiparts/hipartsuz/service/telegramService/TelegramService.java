@@ -100,6 +100,7 @@ public class TelegramService {
             order.setLat(branch.getLat());
             order.setLon(branch.getLon());
             order.setAddress(branch.getName());
+            order.setBranch(branch.getName());
             UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(), order);
             BotUtils.send(
                     DeleteMessage.builder()
@@ -375,16 +376,19 @@ public class TelegramService {
             }
             case INPUT_CURRENCY -> {
                 if (message.hasText()) {
-                    String existingCurrency = botSettingsService.getCurrency();
-                    String currency = message.getText();
-                    List<Product> all = productRepository.findAll();
-                    all.forEach(
-                            p-> p.setPrice((p.getPrice() / Double.parseDouble(existingCurrency)) * Double.parseDouble(currency))
-                    );
-                    productRepository.saveAll(all);
-                    botSettingsService.setCurrency(currency);
-                    BotUtils.send(sendMessageService.successfully(telegramUser));
-                    BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                    try {
+                        String existingCurrency = botSettingsService.getCurrency();
+                        String currency = message.getText();
+                        List<Product> all = productRepository.findAll();
+                        all.forEach(
+                                p-> p.setPrice((p.getPrice() / Double.parseDouble(existingCurrency)) * Double.parseDouble(currency))
+                        );
+                        productRepository.saveAll(all);
+                        botSettingsService.setCurrency(currency);
+                        BotUtils.send(sendMessageService.successfully(telegramUser));
+                        BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                    }catch (NumberFormatException ignore) {
+                    }
                 }
             }
         }
