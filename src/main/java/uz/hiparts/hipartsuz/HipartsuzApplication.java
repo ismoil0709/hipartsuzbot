@@ -4,19 +4,24 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import uz.hiparts.hipartsuz.model.Branch;
-import uz.hiparts.hipartsuz.model.Category;
-import uz.hiparts.hipartsuz.model.Product;
-import uz.hiparts.hipartsuz.repository.BranchRepository;
-import uz.hiparts.hipartsuz.repository.CategoryRepository;
-import uz.hiparts.hipartsuz.repository.ProductRepository;
-
-import java.util.ArrayList;
-import java.util.List;
+import uz.hiparts.hipartsuz.model.BotSettings;
+import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
 
 @SpringBootApplication
 public class HipartsuzApplication {
     public static void main(String[] args) {
         SpringApplication.run(HipartsuzApplication.class,args);
+    }
+    @Bean
+    CommandLineRunner commandLineRunner(BotSettingsRepository botSettingsRepository) {
+        return args -> {
+            if (botSettingsRepository.findById(1L).isEmpty()) {
+                botSettingsRepository.save(BotSettings.builder()
+                                .currency("0")
+                                .deliveryPrice("0")
+                                .operatorNumber("0")
+                        .build());
+            }
+        };
     }
 }

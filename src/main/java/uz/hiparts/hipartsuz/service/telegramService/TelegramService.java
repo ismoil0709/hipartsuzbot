@@ -21,12 +21,7 @@ import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.repository.ProductRepository;
-import uz.hiparts.hipartsuz.service.BranchService;
-import uz.hiparts.hipartsuz.service.CategoryService;
-import uz.hiparts.hipartsuz.service.LangService;
-import uz.hiparts.hipartsuz.service.ProductService;
-import uz.hiparts.hipartsuz.service.TelegramUserService;
-import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.service.*;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
@@ -46,6 +41,7 @@ public class TelegramService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final SMSService smsService;
+    private final BotSettingsService botSettingsService;
 
     public void handleMessage(Message message) {
             if (message.hasText()) {
@@ -279,7 +275,7 @@ public class TelegramService {
                     ProductCreateUpdateDto productDto = UtilLists.productCreateUpdateDtoMap.get(message.getChatId());
                     if (productPrice.matches(Regex.PRICE)) {
                         double price = Double.parseDouble(productPrice);
-                        double currency = Double.parseDouble(UtilLists.currency.isEmpty() ? "0" : UtilLists.currency);
+                        double currency = Double.parseDouble(botSettingsService.getCurrency());
                         productDto.setPrice(price * currency);
                         UtilLists.productCreateUpdateDtoMap.put(message.getChatId(), productDto);
                         telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_DESCRIPTION);
@@ -317,6 +313,7 @@ public class TelegramService {
                     productService.create(productCreateUpdateDto);
                     UtilLists.productCreateUpdateDtoMap.put(message.getChatId(),null);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 }
             }
@@ -350,13 +347,14 @@ public class TelegramService {
             }
             case INPUT_CURRENCY -> {
                 if (message.hasText()) {
+                    String existingCurrency = botSettingsService.getCurrency();
                     String currency = message.getText();
                     List<Product> all = productRepository.findAll();
                     all.forEach(
-                            p-> p.setPrice((p.getPrice() / Double.parseDouble(UtilLists.currency == null || UtilLists.currency.isEmpty() ? "0" : UtilLists.currency)) * Double.parseDouble(currency))
+                            p-> p.setPrice((p.getPrice() / Double.parseDouble(existingCurrency)) * Double.parseDouble(currency))
                     );
                     productRepository.saveAll(all);
-                    UtilLists.currency = currency;
+                    botSettingsService.setCurrency(currency);
                     BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 }

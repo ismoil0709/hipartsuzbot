@@ -11,5 +11,4 @@ import java.util.Map;
 public class UtilLists {
     public static Map<Long, Order> orderMap = new HashMap<>();
     public static Map<Long, ProductCreateUpdateDto> productCreateUpdateDtoMap = new HashMap<>();
-    public static String currency = "";
 }

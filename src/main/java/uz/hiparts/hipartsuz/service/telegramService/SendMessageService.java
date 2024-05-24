@@ -21,12 +21,12 @@ import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
+import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
 import uz.hiparts.hipartsuz.util.KeyboardUtils;
-import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,7 @@ public class SendMessageService {
     private final UserService userService;
     private final ProductService productService;
     private final OrderRepository orderRepository;
+    private final BotSettingsService botSettingsService;
     private User user;
     private final CategoryRepository categoryRepository;
 
@@ -442,7 +443,7 @@ public class SendMessageService {
 
     public EditMessageText writeCurrency(TelegramUser telegramUser, Integer messageId) {
         String message = langService.getMessage(LangFields.INPUT_CURRENCY, telegramUser.getChatId());
-        message = message.replaceAll("\\?", UtilLists.currency);
+        message = message.replaceAll("\\?", botSettingsService.getCurrency());
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
