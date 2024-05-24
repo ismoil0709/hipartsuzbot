@@ -166,18 +166,28 @@ public class TelegramService {
                 telegramUserService.setState(callbackQuery.getMessage().getChatId(),UserState.INPUT_CURRENCY);
             }
             case REMOVE_ADMIN -> {
+                BotUtils.send(sendMessageService.removeAdminMethod(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_METHOD_REMOVE_ADMIN);
             }
             case ADD_ADMIN -> {
                 BotUtils.send(sendMessageService.setAdminMethod(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_METHOD_SET_ADMIN);
             }
-            case BY_PHONE_NUMBER -> {
+            case SET_BY_PHONE_NUMBER -> {
                 BotUtils.send(sendMessageService.writePhoneNumber(telegramUser, callbackQuery.getMessage().getMessageId()));
-                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_PHONE_NUMBER);
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_PHONE_NUMBER_FOR_SET);
             }
-            case BY_USERNAME -> {
+            case SET_BY_USERNAME -> {
                 BotUtils.send(sendMessageService.writeUsername(telegramUser, callbackQuery.getMessage().getMessageId()));
-                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_USERNAME);
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_USERNAME_FOR_SET);
+            }
+            case REMOVE_BY_PHONE_NUMBER -> {
+                BotUtils.send(sendMessageService.writePhoneNumber(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_PHONE_NUMBER_FOR_REMOVE);
+            }
+            case REMOVE_BY_USERNAME -> {
+                BotUtils.send(sendMessageService.writeUsername(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_ADMIN_USERNAME_FOR_REMOVE);
             }
             case ORDER_CONFIRM_NO -> {
                 BotUtils.send(sendMessageService.cancelOrder(telegramUser,callbackQuery.getMessage().getMessageId()));
@@ -327,7 +337,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.sendImage(telegramUser));
                 }
             }
-            case INPUT_ADMIN_USERNAME -> {
+            case INPUT_ADMIN_USERNAME_FOR_SET -> {
                 if (message.hasText()){
                     String username = message.getText();
                     userService.setAdminByUsername(username);
@@ -336,10 +346,28 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
-            case INPUT_ADMIN_PHONE_NUMBER -> {
+            case INPUT_ADMIN_PHONE_NUMBER_FOR_SET -> {
                 if (message.hasText()){
                     String phoneNumber = message.getText();
                     userService.setAdminByPhoneNumber(phoneNumber);
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
+                    BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                }
+            }
+            case INPUT_ADMIN_USERNAME_FOR_REMOVE -> {
+                if (message.hasText()){
+                    String username = message.getText();
+                    userService.removeAdminByUsername(username);
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
+                    BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                }
+            }
+            case INPUT_ADMIN_PHONE_NUMBER_FOR_REMOVE -> {
+                if (message.hasText()){
+                    String phoneNumber = message.getText();
+                    userService.removeAdminByPhoneNumber(phoneNumber);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                     BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
