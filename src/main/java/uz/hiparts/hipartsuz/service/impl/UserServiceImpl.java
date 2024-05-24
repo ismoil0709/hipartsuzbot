@@ -36,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setAdminByPhoneNumber(String phoneNumber) {
+        if (!(phoneNumber.startsWith("+998"))){
+            phoneNumber = "+998" + phoneNumber;
+        }
         Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
         if (byPhoneNumber.isEmpty()) {
             throw new NotFoundException("User not found");
@@ -56,6 +59,35 @@ public class UserServiceImpl implements UserService {
         User user = byUsername.get();
         if (!(user.getRole() == Role.ADMIN)){
             user.setRole(Role.ADMIN);
+        }
+        userRepository.save(user);
+    }
+
+    @Override
+    public void removeAdminByPhoneNumber(String phoneNumber) {
+        if (!(phoneNumber.startsWith("+998"))){
+            phoneNumber = "+998" + phoneNumber;
+        }
+        Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
+        if (byPhoneNumber.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        User user = byPhoneNumber.get();
+        if (user.getRole() == Role.ADMIN){
+            user.setRole(Role.USER);
+        }
+        userRepository.save(user);
+    }
+
+    @Override
+    public void removeAdminByUsername(String username) {
+        Optional<User> byUsername = userRepository.findByUsername(username);
+        if (byUsername.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        User user = byUsername.get();
+        if (user.getRole() == Role.ADMIN){
+            user.setRole(Role.USER);
         }
         userRepository.save(user);
     }
