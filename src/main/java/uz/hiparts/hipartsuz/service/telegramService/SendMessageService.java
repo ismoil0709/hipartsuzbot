@@ -33,6 +33,7 @@ import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -378,14 +379,29 @@ public class SendMessageService {
     }
 
     public SendMessage chooseCategory(TelegramUser telegramUser) {
-        List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
-                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY.getCallback() + c.getId())).toList());
+        List<InlineKeyboardButton> buttons = categoryRepository.findAll().stream()
+                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY.getCallback() + c.getId()))
+                .collect(Collectors.toList());
         buttons.add(KeyboardUtils.inlineButton(
                 langService.getMessage(LangFields.BUTTON_NEW_CATEGORY, telegramUser.getChatId()),
                 Callback.NEW_CATEGORY.getCallback()));
         buttons.add(KeyboardUtils.inlineButton(
                 langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
                 Callback.BACK_TO_ADMIN_PANEL.getCallback()));
+
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.CHOOSE_CATEGORY, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.categoryMarkupWithCancel(buttons))
+                .build();
+    }
+
+
+    public SendMessage changeCategory(TelegramUser telegramUser) {
+        List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
+                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CHANGED_CATEGORY.getCallback() + c.getId())).toList());
+        buttons.add(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NEW_CATEGORY, telegramUser.getChatId()), Callback.CHANGE_NEW_CATEGORY.getCallback()));
+
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.CHOOSE_CATEGORY, telegramUser.getChatId()))
@@ -393,16 +409,6 @@ public class SendMessageService {
                 .build();
     }
 
-    public SendMessage changeCategory(TelegramUser telegramUser) {
-        List<InlineKeyboardButton> buttons = new ArrayList<>(categoryRepository.findAll().stream()
-                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CHANGED_CATEGORY.getCallback() + c.getId())).toList());
-        buttons.add(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NEW_CATEGORY, telegramUser.getChatId()), Callback.CHANGE_NEW_CATEGORY.getCallback()));
-        return SendMessage.builder()
-                .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.CHOOSE_CATEGORY, telegramUser.getChatId()))
-                .replyMarkup(KeyboardUtils.categoryMarkup(buttons))
-                .build();
-    }
 
     public SendMessage sendImage(TelegramUser telegramUser) {
         return SendMessage.builder()
@@ -431,12 +437,27 @@ public class SendMessageService {
                 .build();
     }
 
+    public SendMessage invalidDiscount(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INVALID_DISCOUNT, telegramUser.getChatId()))
+                .build();
+    }
+
     public SendMessage writeCategory(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_CATEGORY_NAME, telegramUser.getChatId()))
                 .build();
     }
+
+    public SendMessage duplicateCategoryError(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INVALID_CATEGORY_NAME, telegramUser.getChatId()))
+                .build();
+    }
+
 
     public EditMessageText writeProductId(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
@@ -501,13 +522,6 @@ public class SendMessageService {
                 .build();
     }
 
-    public SendMessage invalidChangingProductPrice(TelegramUser telegramUser) {
-        return SendMessage.builder()
-                .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.INVALID_PRICE, telegramUser.getChatId()))
-                .build();
-    }
-
     public EditMessageText changeProductDiscount(TelegramUser telegramUser, Integer messageId) {
         String text = langService.getMessage(LangFields.INPUT_NEW_PRODUCT_DISCOUNT, telegramUser.getChatId())
                 .replaceAll("\\?", UtilLists.productUpdate.get(telegramUser.getChatId()).getDiscount().toString());
@@ -516,13 +530,6 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
-                .build();
-    }
-
-    public SendMessage invalidChangingProductDiscount(TelegramUser telegramUser) {
-        return SendMessage.builder()
-                .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.INVALID_DISCOUNT, telegramUser.getChatId()))
                 .build();
     }
 
@@ -663,11 +670,10 @@ public class SendMessageService {
 
     public EditMessageText confirmOrder(TelegramUser telegramUser, Integer messageId, Order order) {
         order = orderRepository.save(order);
-        StringBuilder sb = new StringBuilder("BSD-" + order.getId());
-        sb.append(" raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : ")
-                .append("\n").append("+998993310550");
+        String sb = "BSD-" + order.getId() + " raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : " +
+                "\n" + "+998993310550";
         return EditMessageText.builder()
-                .text(sb.toString())
+                .text(sb)
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .build();

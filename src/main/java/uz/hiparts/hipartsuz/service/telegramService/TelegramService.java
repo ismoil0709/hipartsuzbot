@@ -174,6 +174,7 @@ public class TelegramService {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_ID);
             }
             case BACK_TO_ADMIN_PANEL -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
                 BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
@@ -224,10 +225,12 @@ public class TelegramService {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_IMAGE);
             }
             case NEW_CATEGORY -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
                 BotUtils.send(sendMessageService.writeCategory(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_CATEGORY);
             }
             case CHANGE_NEW_CATEGORY -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
                 BotUtils.send(sendMessageService.writeCategory(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_NEW_PRODUCT_CATEGORY);
             }
@@ -365,7 +368,7 @@ public class TelegramService {
                 if (message.hasText()) {
                     String productPrice = message.getText();
                     ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
-                    if (productPrice.matches(Regex.PRICE)) {
+                    if (isNaturalNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
                         double price = Double.parseDouble(productPrice);
                         double currency = Double.parseDouble(botSettingsService.getCurrency());
                         productCreateUpdateDto.setPrice(price * currency);
@@ -381,13 +384,16 @@ public class TelegramService {
             case INPUT_PRODUCT_DISCOUNT -> {
                 if (message.hasText()) {
                     String discount = message.getText();
-                    ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
-                    productCreateUpdateDto.setDiscount(Double.valueOf(discount));
-                    UtilLists.productCreate.put(message.getChatId(), productCreateUpdateDto);
-                    BotUtils.send(sendMessageService.sendImage(telegramUser));
-                    telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_IMAGE);
-                } else
-                    BotUtils.send(sendMessageService.invalidPrice(telegramUser));
+                    if (isNaturalNumber(discount) && discount.matches(Regex.PRICE)) {
+                        ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
+                        productCreateUpdateDto.setDiscount(Double.valueOf(discount));
+                        UtilLists.productCreate.put(message.getChatId(), productCreateUpdateDto);
+                        BotUtils.send(sendMessageService.sendImage(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_IMAGE);
+                    } else {
+                        BotUtils.send(sendMessageService.invalidDiscount(telegramUser));
+                    }
+                }
             }
 
             case INPUT_PRODUCT_IMAGE -> {
@@ -408,25 +414,23 @@ public class TelegramService {
             case INPUT_PRODUCT_CATEGORY -> {
                 if (message.hasText()) {
                     String categoryName = message.getText();
-                    ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
-                    productCreateUpdateDto.setCategory(categoryService.save(categoryName));
-                    productService.create(productCreateUpdateDto);
-                    UtilLists.productCreate.put(message.getChatId(), null);
-                    BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), message.getMessageId()));
-                    BotUtils.send(sendMessageService.successfully(telegramUser));
-                    BotUtils.send(sendMessageService.adminPanel(telegramUser));
-                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-                }
-            }
-
-            case INPUT_NEW_PRODUCT_CATEGORY -> {
-                if (message.hasText()) {
-                    String categoryName = message.getText();
-                    ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
-                    productDto.setCategory(categoryService.save(categoryName));
-                    UtilLists.productUpdate.put(message.getChatId(), productDto);
-                    productService.update(new ProductCreateUpdateDto(productDto));
-                    BotUtils.send(sendMessageService.changeProduct(telegramUser));
+                    try {
+                        Category existingCategory = categoryService.getByName(categoryName);
+                        if (existingCategory != null) {
+                            BotUtils.send(sendMessageService.duplicateCategoryError(telegramUser));
+                            BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                        }
+                    } catch (NotFoundException e) {
+                        ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
+                        Category newCategory = categoryService.save(categoryName);
+                        productCreateUpdateDto.setCategory(newCategory);
+                        productService.create(productCreateUpdateDto);
+                        UtilLists.productCreate.put(message.getChatId(), null);
+                        BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), message.getMessageId()));
+                        BotUtils.send(sendMessageService.successfully(telegramUser));
+                        BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    }
                 }
             }
 
@@ -465,17 +469,16 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.changeProduct(telegramUser));
                 }
             }
-
             case INPUT_NEW_PRODUCT_PRICE -> {
                 if (message.hasText()) {
                     String productPrice = message.getText();
-                    if (isNaturalNumber(productPrice)) {
+                    if (isNaturalNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
                         ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
                         productDto.setPrice(Double.parseDouble(productPrice));
                         UtilLists.productUpdate.put(message.getChatId(), productDto);
                         BotUtils.send(sendMessageService.changeProduct(telegramUser));
                     } else {
-                        BotUtils.send(sendMessageService.invalidChangingProductPrice(telegramUser));
+                        BotUtils.send(sendMessageService.invalidPrice(telegramUser));
                     }
                 }
             }
@@ -489,7 +492,7 @@ public class TelegramService {
                         UtilLists.productUpdate.put(message.getChatId(), productDto);
                         BotUtils.send(sendMessageService.changeProduct(telegramUser));
                     } else {
-                        BotUtils.send(sendMessageService.invalidChangingProductDiscount(telegramUser));
+                        BotUtils.send(sendMessageService.invalidDiscount(telegramUser));
                     }
                 }
             }
@@ -506,6 +509,27 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.changeProduct(telegramUser));
                 }
             }
+
+            case INPUT_NEW_PRODUCT_CATEGORY -> {
+                if (message.hasText()) {
+                    String categoryName = message.getText();
+                    try {
+                        Category existingCategory = categoryService.getByName(categoryName);
+                        if (existingCategory != null) {
+                            BotUtils.send(sendMessageService.duplicateCategoryError(telegramUser));
+                            BotUtils.send(sendMessageService.changeProduct(telegramUser));
+                        }
+                    } catch (NotFoundException e) {
+                        ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
+                        Category newCategory = categoryService.save(categoryName);
+                        productDto.setCategory(newCategory);
+                        UtilLists.productUpdate.put(message.getChatId(), productDto);
+                        productService.update(new ProductCreateUpdateDto(productDto));
+                        BotUtils.send(sendMessageService.changeProduct(telegramUser));
+                    }
+                }
+            }
+
 
             case INPUT_ADMIN_USERNAME_FOR_SET -> {
                 if (message.hasText()) {
@@ -570,14 +594,6 @@ public class TelegramService {
     }
 
     private boolean isNaturalNumber(String str) {
-        if (str == null || str.isEmpty()) {
-            return false;
-        }
-        for (char c : str.toCharArray()) {
-            if (!Character.isDigit(c)) {
-                return false;
-            }
-        }
         try {
             int num = Integer.parseInt(str);
             return num >= 0;

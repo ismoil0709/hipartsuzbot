@@ -15,23 +15,24 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class KeyboardUtils {
-    public static InlineKeyboardMarkup inlineMarkup(InlineKeyboardButton... buttons){
+    public static InlineKeyboardMarkup inlineMarkup(InlineKeyboardButton... buttons) {
         List<List<InlineKeyboardButton>> rows = Arrays.stream(buttons)
                 .map(button -> {
-                    List<InlineKeyboardButton> row =  new ArrayList<>();
+                    List<InlineKeyboardButton> row = new ArrayList<>();
                     row.add(button);
                     return row;
                 }).collect(Collectors.toList());
         return new InlineKeyboardMarkup(rows);
     }
-    public static InlineKeyboardMarkup inlineMarkup(List<InlineKeyboardButton> buttons){
+
+    public static InlineKeyboardMarkup inlineMarkup(List<InlineKeyboardButton> buttons) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        if (buttons.size() % 2 == 0){
-            for (int i = 0; i < buttons.size(); i+=2) {
+        if (buttons.size() % 2 == 0) {
+            for (int i = 0; i < buttons.size(); i += 2) {
                 rows.add(List.of(buttons.get(i), buttons.get(i + 1)));
             }
-        }else {
-            for (int i = 0; i <= buttons.size(); i+=2) {
+        } else {
+            for (int i = 0; i <= buttons.size(); i += 2) {
                 if (i + 1 < buttons.size()) {
                     rows.add(List.of(buttons.get(i), buttons.get(i + 1)));
                 } else {
@@ -41,32 +42,61 @@ public class KeyboardUtils {
         }
         return new InlineKeyboardMarkup(rows);
     }
-    public static InlineKeyboardMarkup categoryMarkup(List<InlineKeyboardButton> buttons){
+
+    public static InlineKeyboardMarkup categoryMarkup(List<InlineKeyboardButton> buttons) {
         InlineKeyboardButton keyboardButton = buttons.remove(buttons.size() - 1);
         List<List<InlineKeyboardButton>> rows = inlineMarkup(buttons).getKeyboard();
         rows.add(List.of(keyboardButton));
         return new InlineKeyboardMarkup(rows);
     }
-    public static InlineKeyboardButton inlineButton(String text, String callBack){
+
+    public static InlineKeyboardMarkup categoryMarkupWithCancel(List<InlineKeyboardButton> buttons) {
+        int lastIndex = buttons.size() - 1;
+        InlineKeyboardButton cancelButton = buttons.remove(lastIndex);
+        InlineKeyboardButton lastButton = buttons.remove(lastIndex - 1);
+
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        if (buttons.size() % 2 == 0) {
+            for (int i = 0; i < buttons.size(); i += 2) {
+                rows.add(List.of(buttons.get(i), buttons.get(i + 1)));
+            }
+        } else {
+            for (int i = 0; i < buttons.size() - 1; i += 2) {
+                rows.add(List.of(buttons.get(i), buttons.get(i + 1)));
+            }
+            rows.add(List.of(buttons.get(buttons.size() - 1)));
+        }
+
+        rows.add(List.of(lastButton));
+        rows.add(List.of(cancelButton));
+
+        return new InlineKeyboardMarkup(rows);
+    }
+
+    public static InlineKeyboardButton inlineButton(String text, String callBack) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(text);
         button.setCallbackData(callBack);
         return button;
     }
-    public static InlineKeyboardButton inlineButtonWithWebApp(String text, String webAppUrl){
+
+    public static InlineKeyboardButton inlineButtonWithWebApp(String text, String webAppUrl) {
         return InlineKeyboardButton.builder()
                 .text(text)
                 .webApp(new WebAppInfo(webAppUrl))
                 .build();
     }
-    public static KeyboardButton button(String text,boolean contact,boolean location){
+
+    public static KeyboardButton button(String text, boolean contact, boolean location) {
         KeyboardButton keyboardButton = new KeyboardButton();
         keyboardButton.setText(text);
         keyboardButton.setRequestContact(contact);
         keyboardButton.setRequestLocation(location);
         return keyboardButton;
     }
-    public static ReplyKeyboardMarkup markup(KeyboardButton... buttons){
+
+    public static ReplyKeyboardMarkup markup(KeyboardButton... buttons) {
 
         List<KeyboardRow> rows = Arrays.stream(buttons)
                 .map(button -> {
