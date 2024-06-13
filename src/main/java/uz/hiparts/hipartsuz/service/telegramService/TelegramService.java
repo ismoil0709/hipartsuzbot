@@ -224,11 +224,11 @@ public class TelegramService {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_IMAGE);
             }
             case NEW_CATEGORY -> {
-                BotUtils.send(sendMessageService.writeCategory(telegramUser, callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.writeCategory(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_PRODUCT_CATEGORY);
             }
             case CHANGE_NEW_CATEGORY -> {
-                BotUtils.send(sendMessageService.writeCategory(telegramUser, callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.writeCategory(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_NEW_PRODUCT_CATEGORY);
             }
             case CHANGE_CURRENCY -> {
