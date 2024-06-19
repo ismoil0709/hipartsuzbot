@@ -9,7 +9,7 @@ import lombok.ToString;
 import lombok.experimental.UtilityClass;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaBotMethod;
 import org.telegram.telegrambots.meta.api.objects.WebhookInfo;
 import uz.hiparts.hipartsuz.dto.TelegramResultDto;
 
@@ -17,25 +17,23 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
 public class BotUtils {
     private static final String BASE_URL = "https://api.telegram.org/bot";
     private static final String FILE_URL = "https://api.telegram.org/file/bot";
-    private static final String BOT_TOKEN = "<bot_token>/";
+    private static final String BOT_TOKEN = "6696989874:AAErErHSFQCtAP6j9-73ae24w2mGGTlHtUY/";
     private static final RestTemplate restTemplate = new RestTemplate();
     public static <T extends Serializable,Method extends BotApiMethod<T>> void send(Method method) {
         restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(),method, TelegramResultDto.class);
     }
+    public static <T extends Serializable> void sendWithMedia(SendMediaBotMethod<T> method) {
+        System.out.println(method);
+        restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(),method, TelegramResultDto.class);
+    }
     @SneakyThrows
-    public static String getFile(List<PhotoSize> photo) {
-        String fileId = photo.stream()
-                .max(Comparator.comparingInt(PhotoSize::getFileSize))
-                .map(PhotoSize::getFileId)
-                .orElseThrow(() -> new IllegalArgumentException("No photo found"));
+    public static String getFile(String fileId) {
         String fileName = UUID.randomUUID() + ".jpg";
         FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
         if (response != null && response.isOk()) {

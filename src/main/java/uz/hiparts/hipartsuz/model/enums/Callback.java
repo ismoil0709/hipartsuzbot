@@ -15,30 +15,46 @@ public enum Callback {
     LANG_RU("lang-ru"),
     LANG_EN("lang-en"),
     CHANGE_LANGUAGE("change-language"),
+
     PICK_UP("pickup"),
     DELIVERY("delivery"),
+
     CONFIRM_YES("confirm-yes"),
     CONFIRM_NO("confirm-no"),
+    CONFIRM_LOCATION_YES("location-confirm-yes"),
+    CONFIRM_LOCATION_NO("location-confirm-no"),
+    CONFIRM_ORDER_YES("order-confirm-yes"),
+    CONFIRM_ORDER_NO("order-confirm-no"),
+    CONFIRM_PRODUCT_CHANGES("confirm-product-changes"),
+
+    SKIP_DESCRIPTION("skip-description"),
+    SKIP_DISCOUNT("skip-discount"),
+
     BRANCH("branch-"),
     CATALOG("catalog"),
-    LOCATION_CONFIRM_YES("location-confirm-yes"),
-    LOCATION_CONFIRM_NO("location-confirm-no"),
     ADD_PRODUCT("add-product"),
     REMOVE_ADMIN("remove-admin"),
     ADD_ADMIN("add-admin"),
-    SKIP_DESCRIPTION("skip-description"),
     CATEGORY("category-"),
     NEW_CATEGORY("new-category"),
-    SKIP_DISCOUNT("skip-discount"),
+    CHANGE_NEW_CATEGORY("change-category"),
     SET_BY_USERNAME("admin-username-set"),
     SET_BY_PHONE_NUMBER("admin-phone-number-set"),
     REMOVE_BY_USERNAME("admin-username-remove"),
     REMOVE_BY_PHONE_NUMBER("admin-phone-number-remove"),
     CHANGE_CURRENCY("change-currency"),
-    ORDER_CONFIRM_YES("order-confirm-yes"),
-    ORDER_CONFIRM_NO("order-confirm-no"),
 
-    BOT_SETTINGS("bot-settings"),;
+    CHANGE_PRODUCT("change-product"),
+    CHANGE_PRODUCT_NAME("product-name"),
+    CHANGE_PRODUCT_DESCRIPTION("product-description"),
+    CHANGE_PRODUCT_PRICE("product-price"),
+    CHANGE_PRODUCT_IMAGE("product-image"),
+    CHANGE_PRODUCT_CATEGORY("product-category"),
+    CHANGE_PRODUCT_DISCOUNT("product-discount"),
+    BACK_TO_ADMIN_PANEL("back-to-admin-panel"),
+    CHANGED_CATEGORY("changed_category-"),
+
+    BOT_SETTINGS("bot-settings");
 
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();
