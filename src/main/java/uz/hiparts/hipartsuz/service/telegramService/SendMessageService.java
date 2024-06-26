@@ -329,7 +329,8 @@ public class SendMessageService {
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.ADMIN_PANEL, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_CURRENCY, telegramUser.getChatId()), Callback.CHANGE_CURRENCY.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_CURRENCY, telegramUser.getChatId()), Callback.CHANGE_CURRENCY.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
                 ))
                 .build();
     }
@@ -589,7 +590,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.CHOOSE_SET_ADMIN_METHOD, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.SET_BY_PHONE_NUMBER.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.SET_BY_USERNAME.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.SET_BY_USERNAME.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
                 ))
                 .build();
     }
@@ -601,7 +603,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.CHOOSE_REMOVE_ADMIN_METHOD, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_PHONE_NUMBER, telegramUser.getChatId()), Callback.REMOVE_BY_PHONE_NUMBER.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.REMOVE_BY_USERNAME.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_SET_OR_REMOVE_ADMIN_BY_USERNAME, telegramUser.getChatId()), Callback.REMOVE_BY_USERNAME.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
                 ))
                 .build();
     }
@@ -611,6 +614,8 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_USERNAME, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
@@ -619,6 +624,8 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_PHONE_NUMBER, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
