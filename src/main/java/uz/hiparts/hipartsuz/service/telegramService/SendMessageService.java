@@ -614,6 +614,8 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_USERNAME, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
@@ -622,6 +624,8 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_PHONE_NUMBER, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
