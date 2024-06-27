@@ -17,10 +17,7 @@ import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
-import uz.hiparts.hipartsuz.model.enums.Callback;
-import uz.hiparts.hipartsuz.model.enums.LangFields;
-import uz.hiparts.hipartsuz.model.enums.OrderType;
-import uz.hiparts.hipartsuz.model.enums.Role;
+import uz.hiparts.hipartsuz.model.enums.*;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.service.BotSettingsService;
@@ -69,7 +66,8 @@ public class SendMessageService {
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_RUSSIAN_LANGUAGE, chatId), Callback.LANG_RU.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_UZBEK_LANGUAGE, chatId), Callback.LANG_UZ.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ENGLISH_LANGUAGE, chatId), Callback.LANG_EN.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ENGLISH_LANGUAGE, chatId), Callback.LANG_EN.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_CHANGE_LANG.getCallback())
                 ))
                 .build();
     }
@@ -79,7 +77,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.LANGUAGE_CHANGED, chatId))
                 .chatId(chatId)
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, chatId), Callback.CHANGE_LANGUAGE.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_LANGUAGE, chatId), Callback.CHANGE_LANGUAGE.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, chatId), Callback.BACK_TO_MAIN_MENU.getCallback())
                 ))
                 .build();
     }
@@ -91,12 +90,32 @@ public class SendMessageService {
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_CONTACT, telegramUser.getChatId()),
                                 true, false
+                        ),
+                        KeyboardUtils.button(
+                                langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
+                                false,false
                         )
                 ))
                 .chatId(telegramUser.getChatId())
                 .build();
     }
-
+    public SendMessage welcomeUser(TelegramUser telegramUser) {
+        telegramUser.setState(UserState.INPUT_PHONE_NUMBER);
+        return SendMessage.builder()
+                .text(langService.getMessage(LangFields.WELCOME_USER, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.markup(
+                        KeyboardUtils.button(
+                                langService.getMessage(LangFields.BUTTON_SETTINGS, telegramUser.getChatId()),
+                                false, false
+                        ),
+                        KeyboardUtils.button(
+                                langService.getMessage(LangFields.BUTTON_NEW_ORDER, telegramUser.getChatId()),
+                                false, false
+                        )
+                ))
+                .chatId(telegramUser.getChatId())
+                .build();
+    }
     public SendMessage setLang(String data, TelegramUser telegramUser) {
         String lang = data.split("-")[1];
         if (lang.equals("ru"))
@@ -164,7 +183,11 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INPUT_SHIPPING_ADDRESS, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.markup(
-                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_LOCATION, telegramUser.getChatId()), false, true)
+                        KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_LOCATION, telegramUser.getChatId()), false, true),
+                        KeyboardUtils.button(
+                                langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
+                                false,false
+                        )
                 ))
                 .build();
     }
@@ -176,6 +199,7 @@ public class SendMessageService {
         }
         return EditMessageText.builder()
                 .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
+                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_CHOOSE_ORDER_TYPE.getCallback())))
                 .text(langService.getMessage(LangFields.CHOOSE_BRANCH, telegramUser.getChatId()))
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
@@ -190,6 +214,7 @@ public class SendMessageService {
                         KeyboardUtils.inlineMarkup(List.of(
                                 KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_YES, telegramUser.getChatId()), Callback.CONFIRM_LOCATION_YES.getCallback()),
                                 KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_NO, telegramUser.getChatId()), Callback.CONFIRM_LOCATION_NO.getCallback())
+
                         ))
                 )
                 .build();
@@ -201,7 +226,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.DELIVERY_OR_PICKUP, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_DELIVERY, telegramUser.getChatId()), Callback.DELIVERY.getCallback()),
-                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_PICKUP, telegramUser.getChatId()), Callback.PICK_UP.getCallback())
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_PICKUP, telegramUser.getChatId()), Callback.PICK_UP.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_MAIN_MENU.getCallback())
                 ))
                 .build();
     }
@@ -241,7 +267,11 @@ public class SendMessageService {
                 .replyMarkup(
                         KeyboardUtils.markup(
                                 KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_CHANGE_PHONE_NUMBER, telegramUser.getChatId()), false, false),
-                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_RESEND_CODE, telegramUser.getChatId()), false, false)
+                                KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_RESEND_CODE, telegramUser.getChatId()), false, false),
+                                KeyboardUtils.button(
+                                        langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
+                                        false,false
+                                )
                         )
                 )
                 .chatId(telegramUser.getChatId())

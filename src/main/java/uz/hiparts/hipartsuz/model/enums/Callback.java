@@ -52,6 +52,9 @@ public enum Callback {
     CHANGE_PRODUCT_CATEGORY("product-category"),
     CHANGE_PRODUCT_DISCOUNT("product-discount"),
     BACK_TO_ADMIN_PANEL("back-to-admin-panel"),
+    BACK_TO_CHANGE_LANG("back-to-change-lang"),
+    BACK_TO_MAIN_MENU("back-to-main-menu"),
+    BACK_TO_CHOOSE_ORDER_TYPE("back-to-choose-order-type"),
     CHANGED_CATEGORY("changed_category-"),
 
     BOT_SETTINGS("bot-settings");
