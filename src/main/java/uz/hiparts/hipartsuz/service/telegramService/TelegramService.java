@@ -76,7 +76,7 @@ public class TelegramService {
                         }
                     }
                     telegramUserService.setState(message.getChatId(), UserState.INPUT_PHONE_NUMBER);
-                    BotUtils.send(sendMessageService.start(telegramUser));
+                    BotUtils.send(sendMessageService.welcomeUser(telegramUser));
 
                 }
             } else if (text.equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))) {
@@ -176,6 +176,21 @@ public class TelegramService {
             case BACK_TO_ADMIN_PANEL -> {
                 BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
                 BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            }
+            case BACK_TO_CHANGE_LANG -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.changeLang(telegramUser.getChatId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            }
+            case BACK_TO_MAIN_MENU -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            }
+            case BACK_TO_CHOOSE_ORDER_TYPE -> {
+                BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
             case CHANGE_PRODUCT_NAME -> {
@@ -290,6 +305,19 @@ public class TelegramService {
                     .role(Role.USER)
                     .build();
             userService.save(user);
+        }
+        if (message.hasText()) {
+            String text = message.getText();
+            if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_PHONE_NUMBER))) {
+                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                telegramUserService.setState(message.getChatId(), UserState.DEFAULT);
+            } else if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_CONFIRM_CODE))) {
+                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                telegramUserService.setState(message.getChatId(), UserState.DEFAULT);
+            } else if (text.equals(langService.getMessage(LangFields.BUTTON_BACK , message.getChatId())) && telegramUser.getState() == UserState.INPUT_LOCATION) {
+                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
+                telegramUserService.setState(message.getChatId(), UserState.CHOOSE_ORDER_TYPE);
+            }
         }
         switch (telegramUser.getState()) {
             case INPUT_PHONE_NUMBER -> {
