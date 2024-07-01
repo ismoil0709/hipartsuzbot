@@ -472,6 +472,10 @@ public class SendMessageService {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INVALID_DISCOUNT, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .build();
     }
 
@@ -523,6 +527,10 @@ public class SendMessageService {
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .text(text)
                 .build();
     }
@@ -539,6 +547,10 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .build();
     }
 
@@ -550,6 +562,10 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .build();
     }
 
@@ -561,6 +577,10 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .build();
     }
 
@@ -580,6 +600,10 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
                 .build();
     }
 
