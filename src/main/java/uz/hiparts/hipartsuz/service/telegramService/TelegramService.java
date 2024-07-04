@@ -52,7 +52,6 @@ public class TelegramService {
     private final ProductRepository productRepository;
     private final SMSService smsService;
     private final BotSettingsService botSettingsService;
-    private final RestTemplate restTemplate = new RestTemplate();
 
     public void handleMessage(Message message) {
         if (message.hasText()) {
@@ -211,7 +210,9 @@ public class TelegramService {
             }
             case CHANGE_PRODUCT_IMAGE -> {
                 ProductDto productDto = UtilLists.productUpdate.get(callbackQuery.getMessage().getChatId());
-                BotUtils.sendWithMedia(sendMessageService.sendProductImg(telegramUser, productDto.getImgId()));
+                BotUtils.send(sendMessageService.deleteMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
+                BotUtils.send(sendMessageService.sendProductImg(callbackQuery.getMessage().getChatId(), productDto.getImgId()));
+                telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_NEW_PRODUCT_IMAGE);
             }
             case CHANGE_PRODUCT_CATEGORY -> {
                 BotUtils.send(sendMessageService.changeProductCategory(telegramUser, callbackQuery.getMessage().getMessageId()));
@@ -533,7 +534,9 @@ public class TelegramService {
                             .orElseThrow(() -> new IllegalArgumentException("No photo found"));
                     ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
                     productDto.setImgPath(BotUtils.getFile(fileId));
+                    productDto.setImgId(fileId);
                     UtilLists.productUpdate.put(message.getChatId(), productDto);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
                     BotUtils.send(sendMessageService.changeProduct(telegramUser));
                 }
             }

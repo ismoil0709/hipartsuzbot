@@ -7,9 +7,11 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMediaBotMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.WebhookInfo;
 import uz.hiparts.hipartsuz.dto.TelegramResultDto;
 
@@ -17,6 +19,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @UtilityClass
@@ -28,13 +32,17 @@ public class BotUtils {
     public static <T extends Serializable,Method extends BotApiMethod<T>> void send(Method method) {
         restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(),method, TelegramResultDto.class);
     }
-    public static <T extends Serializable> void sendWithMedia(SendMediaBotMethod<T> method) {
-        System.out.println(method);
-        restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(),method, TelegramResultDto.class);
+    public static void send(SendPhoto method) {
+        Map<String,String> map = new HashMap<>();
+        map.put("chat_id", method.getChatId());
+        map.put("photo",method.getFile().getAttachName());
+        map.put("caption",method.getCaption());
+        HttpEntity<?> requestEntity = new HttpEntity<>(map);
+        restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(),HttpMethod.POST,requestEntity, Void.class);
     }
     @SneakyThrows
     public static String getFile(String fileId) {
-        String fileName = UUID.randomUUID() + ".jpg";
+        String fileName = UUID.randomUUID(  ) + ".jpg";
         FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
         if (response != null && response.isOk()) {
             String filePath = response.getResult().getFilePath();

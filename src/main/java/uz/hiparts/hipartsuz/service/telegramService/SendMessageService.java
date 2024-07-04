@@ -197,9 +197,9 @@ public class SendMessageService {
         for (Branch branch : branches) {
             buttons.add(KeyboardUtils.inlineButton(branch.getName(), Callback.BRANCH.getCallback() + branch.getId()));
         }
+        buttons.add(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_CHOOSE_ORDER_TYPE.getCallback()));
         return EditMessageText.builder()
                 .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
-                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_CHOOSE_ORDER_TYPE.getCallback())))
                 .text(langService.getMessage(LangFields.CHOOSE_BRANCH, telegramUser.getChatId()))
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
@@ -452,14 +452,6 @@ public class SendMessageService {
                 .build();
     }
 
-    public EditMessageText sendImage(TelegramUser telegramUser, Integer messageId) {
-        return EditMessageText.builder()
-                .chatId(telegramUser.getChatId())
-                .text(langService.getMessage(LangFields.INPUT_PRODUCT_IMAGE, telegramUser.getChatId()))
-                .messageId(messageId)
-                .build();
-    }
-
     public SendMessage inputDiscount(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
@@ -561,14 +553,6 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .text(text)
-                .build();
-    }
-
-    public SendPhoto changeProductImage(TelegramUser telegramUser) {
-        return SendPhoto.builder()
-                .chatId(telegramUser.getChatId())
-                .caption(langService.getMessage(LangFields.OLD_PRODUCT_IMAGE, telegramUser.getChatId()))
-                //.photo() //TODO
                 .build();
     }
 
@@ -717,12 +701,11 @@ public class SendMessageService {
     }
 
 
-    public SendPhoto sendProductImg(TelegramUser telegramUser, String imgId) {
+    public SendPhoto sendProductImg(Long chatId, String imgId) {
         return SendPhoto.builder()
-                .chatId(telegramUser.getChatId())
+                .chatId(chatId)
                 .photo(new InputFile(imgId))
-                .caption(":::::")
+                .caption(langService.getMessage(LangFields.INPUT_NEW_PRODUCT_IMAGE,chatId))
                 .build();
-        /// todo add 3 language for example please send new picture
     }
 }

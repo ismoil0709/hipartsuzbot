@@ -35,5 +35,6 @@ public class ProductCreateUpdateDto {
         this.imgPath = productDto.getImgPath();
         this.category = productDto.getCategory();
         this.discount = productDto.getDiscount();
+        this.imgId = productDto.getImgId();
     }
 }
