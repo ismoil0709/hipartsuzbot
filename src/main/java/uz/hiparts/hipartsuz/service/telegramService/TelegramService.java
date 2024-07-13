@@ -184,8 +184,16 @@ public class TelegramService {
             }
             case BACK_TO_MAIN_MENU -> {
                 BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
-                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
-                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                User user = userService.getByChatId(callbackQuery.getMessage().getChatId());
+                if (user != null) {
+                    if (user.getRole().equals(Role.ADMIN)) {
+                        BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                        telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.START);
+                    } else {
+                        BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    }
+                }
             }
             case BACK_TO_CHOOSE_ORDER_TYPE -> {
                 BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
@@ -309,15 +317,27 @@ public class TelegramService {
         }
         if (message.hasText()) {
             String text = message.getText();
-            if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_PHONE_NUMBER))) {
-                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
-                telegramUserService.setState(message.getChatId(), UserState.DEFAULT);
-            } else if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_CONFIRM_CODE))) {
-                BotUtils.send(sendMessageService.welcomeUser(telegramUser));
-                telegramUserService.setState(message.getChatId(), UserState.DEFAULT);
-            } else if (text.equals(langService.getMessage(LangFields.BUTTON_BACK , message.getChatId())) && telegramUser.getState() == UserState.INPUT_LOCATION) {
-                BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
-                telegramUserService.setState(message.getChatId(), UserState.CHOOSE_ORDER_TYPE);
+            if (user != null) {
+                if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_PHONE_NUMBER))) {
+                    if (user.getRole().equals(Role.ADMIN)) {
+                        BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                        telegramUserService.setState(message.getChatId(), UserState.START);
+                    } else {
+                        BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    }
+                } else if ((text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && (telegramUser.getState() == UserState.INPUT_CONFIRM_CODE))) {
+                    if (user.getRole().equals(Role.ADMIN)) {
+                        BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+                        telegramUserService.setState(message.getChatId(), UserState.START);
+                    } else {
+                        BotUtils.send(sendMessageService.welcomeUser(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    }
+                } else if (text.equals(langService.getMessage(LangFields.BUTTON_BACK, message.getChatId())) && telegramUser.getState() == UserState.INPUT_LOCATION) {
+                    BotUtils.send(sendMessageService.chooseOrderType(telegramUser));
+                    telegramUserService.setState(message.getChatId(), UserState.CHOOSE_ORDER_TYPE);
+                }
             }
         }
         switch (telegramUser.getState()) {
