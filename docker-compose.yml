@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: hipartsuzbot
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hipartsuz
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+    depends_on:
+      - postgres
+    ports:
+      - "8095:8095"
+    restart: always
+
+volumes:
+  postgres-data:
