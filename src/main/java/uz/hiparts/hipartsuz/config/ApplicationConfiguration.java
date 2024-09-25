@@ -46,8 +46,8 @@ public class ApplicationConfiguration {
 
     @PostConstruct
     public void init() throws IOException {
-        if (!BotUtils.getWebhookUrl().equals("https://hipartsbot.uz:8095/api/v1/telegram"))
-            BotUtils.send(SetWebhook.builder().url("https://hipartsbot.uz:8095/api/v1/telegram").build());
+        if (!BotUtils.getWebhookUrl().equals("https://hipartsbot.uz/api/v1/telegram"))
+            BotUtils.send(SetWebhook.builder().url("https://hipartsbot.uz/api/v1/telegram").build());
     }
 
 }

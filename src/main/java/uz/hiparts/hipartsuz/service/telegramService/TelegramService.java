@@ -9,6 +9,8 @@ import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import uz.hiparts.hipartsuz.dto.AddressDto;
+import uz.hiparts.hipartsuz.dto.ClickInvoiceDto;
+import uz.hiparts.hipartsuz.dto.ClickInvoiceStatusDto;
 import uz.hiparts.hipartsuz.dto.ProductCreateUpdateDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
@@ -21,8 +23,10 @@ import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
+import uz.hiparts.hipartsuz.model.enums.PaymentType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.ProductRepository;
 import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.BranchService;
@@ -31,6 +35,7 @@ import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
@@ -52,6 +57,8 @@ public class TelegramService {
     private final ProductRepository productRepository;
     private final SMSService smsService;
     private final BotSettingsService botSettingsService;
+    private final PaymentServiceClickImpl paymentServiceClickImpl;
+    private final OrderRepository orderRepository;
 
     public void handleMessage(Message message) {
         if (message.hasText()) {
@@ -292,11 +299,26 @@ public class TelegramService {
                 UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(), null);
             }
             case CONFIRM_ORDER_YES -> {
-                BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
-                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                Order order = UtilLists.orderMap.get(callbackQuery.getMessage().getChatId());
+                order = orderRepository.save(order);
+                UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(),order);
+                if (order.getPaymentType() != PaymentType.CASH){
+                    ClickInvoiceDto clickInvoiceDto = paymentServiceClickImpl.sendInvoice(order.getId(), order.getPhoneNumber());
+                    System.out.println(clickInvoiceDto.toString());
+                    BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
+                }else {
+                    BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                }
             }
             case BOT_SETTINGS -> {
                 BotUtils.send(sendMessageService.botSettings(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            }
+            case PAYED -> {
+                ClickInvoiceStatusDto status = paymentServiceClickImpl.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getPhoneNumber());
+                System.out.println(status);
+                BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
         }

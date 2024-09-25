@@ -36,7 +36,7 @@ public class SMSService {
     }
 
     public boolean check(TelegramUser telegramUser,int code){
-        return confirmCodes.get(telegramUser.getChatId()).equals(code);
+        return confirmCodes.get(telegramUser.getChatId()) != null && confirmCodes.get(telegramUser.getChatId()).equals(code);
     }
     public void savePhoneNumber(TelegramUser telegramUser,String phoneNumber) {
         UtilLists.orderMap.put(telegramUser.getChatId(), Order.builder().phoneNumber(phoneNumber).build());

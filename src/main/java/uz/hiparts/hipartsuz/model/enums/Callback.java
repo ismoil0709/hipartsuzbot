@@ -57,7 +57,8 @@ public enum Callback {
     BACK_TO_CHOOSE_ORDER_TYPE("back-to-choose-order-type"),
     CHANGED_CATEGORY("changed_category-"),
 
-    BOT_SETTINGS("bot-settings");
+    BOT_SETTINGS("bot-settings"),
+    PAYED("payed");
 
     private String callback;
     public static final Map<String, Callback> map = new HashMap<>();

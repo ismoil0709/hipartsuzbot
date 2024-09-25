@@ -1,17 +1,9 @@
 spring:
+  profiles:
+    active: prod
   application:
     name: hipartsuz
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/hipartsuzbot
-    username: postgres
-    password: 123321
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-bot:
-  data:
-    ngrok_url : eft-beloved-owl.ngrok-free.app
-server:
-  port: 8080

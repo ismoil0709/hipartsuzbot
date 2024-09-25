@@ -690,7 +690,6 @@ public class SendMessageService {
     }
 
     public EditMessageText confirmOrder(TelegramUser telegramUser, Integer messageId, Order order) {
-        order = orderRepository.save(order);
         String sb = "BSD-" + order.getId() + " raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : " +
                 "\n" + "+998993310550";
         return EditMessageText.builder()
@@ -706,6 +705,14 @@ public class SendMessageService {
                 .chatId(chatId)
                 .photo(new InputFile(imgId))
                 .caption(langService.getMessage(LangFields.INPUT_NEW_PRODUCT_IMAGE,chatId))
+                .build();
+    }
+    public EditMessageText sendPaymentMessage(Long chatId,Integer messageId){
+        return EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.PAYMENT_MESSAGE,chatId))
+                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton("To'landi !",Callback.PAYED.getCallback())))
                 .build();
     }
 }
