@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import uz.hiparts.hipartsuz.dto.PrepareRequestDto;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.telegramService.TelegramService;
@@ -26,5 +27,9 @@ public class TelegramController {
         } else if (update.hasCallbackQuery()) {
             telegramService.handleCallbackQuery(update.getCallbackQuery());
         }
+    }
+    @PostMapping("/click/prepare")
+    public void prepare(@RequestBody PrepareRequestDto dto){
+        System.out.println(dto.toString());
     }
 }
