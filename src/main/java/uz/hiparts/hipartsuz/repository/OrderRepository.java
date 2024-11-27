@@ -12,9 +12,13 @@ import uz.hiparts.hipartsuz.model.enums.PaymentType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+
+    Optional<Order> findByPhoneNumber(String phoneNumber);
+
     List<Order> findByOrderType(OrderType orderType);
     List<Order> findByUser(User user);
     List<Order> findByBranch(String branch);

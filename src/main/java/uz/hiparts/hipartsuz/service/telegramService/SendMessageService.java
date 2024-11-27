@@ -288,7 +288,7 @@ public class SendMessageService {
             sb.append(langService.getMessage(LangFields.TIME_RECEIVE_ORDER, chatId)).append(" : ").append(order.getTime()).append("\n\n");
         }
         order.getProductQuantities().forEach(p -> {
-            ProductDto product = productService.getById(p.getProductId());
+            ProductDto product = productService.getById(p.getProduct().getId());
             sb.append(product.getName())
                     .append("\n")
                     .append(p.getQuantity())

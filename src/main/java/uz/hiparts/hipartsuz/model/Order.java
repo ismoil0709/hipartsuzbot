@@ -49,6 +49,9 @@ public class Order {
     private String comment;
     private boolean active;
     private String invoiceId;
-    @Transient
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductQuantity> productQuantities;
+    private boolean isPaid;
+    private boolean isCancelled;
+
 }

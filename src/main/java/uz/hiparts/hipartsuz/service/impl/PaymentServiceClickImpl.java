@@ -1,71 +1,235 @@
 package uz.hiparts.hipartsuz.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import uz.hiparts.hipartsuz.dto.ClickInvoiceDto;
-import uz.hiparts.hipartsuz.dto.ClickInvoiceStatusDto;
-import uz.hiparts.hipartsuz.dto.ClickSendInvoiceDto;
+import uz.hiparts.hipartsuz.dto.ClickDto;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
+import uz.hiparts.hipartsuz.model.ClickPayment;
 import uz.hiparts.hipartsuz.model.Order;
+import uz.hiparts.hipartsuz.repository.ClickPaymentRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.service.PaymentService;
+import uz.hiparts.hipartsuz.service.telegramService.SendMessageService;
 
 import java.security.MessageDigest;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentServiceClickImpl implements PaymentService {
+public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
+    private final Environment env;
     private final OrderRepository orderRepository;
+    private final ClickPaymentRepository clickPaymentRepository;
+    private final SendMessageService sendMessageService;
 
-    private static final Integer serviceId = 36335;
-
-    private static final String BASE_URL = "https://api.click.uz/v2/merchant/invoice/";
+    private static final String CLICK_INVOICE_URL = "https://api.click.uz/v2/merchant";
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
 
     {
         long unixTime = System.currentTimeMillis() / 1000L;
-        headers.set("Auth", "44526:" + encryptPasswordToSHA1(unixTime + "iCUfO2CfZkSg") + ":" + unixTime);
+        headers.set("Auth", "44526:" + encryptPasswordToSHA1(unixTime + getSecretKey()) + ":" + unixTime);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
     @Override
-    public ClickInvoiceDto sendInvoice(Long orderId, String phoneNumber) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
-                () -> new NotFoundException("Order")
-        );
-        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                serviceId,
-                order.getTotalPrice().floatValue(),
-                phoneNumber,
-                orderId.toString()
-        ),headers);
-        return restTemplate.exchange(
-                BASE_URL + "create",
-                HttpMethod.POST,
-                entity,
-                ClickInvoiceDto.class
-                ).getBody();
+    public ClickDto prepare(ClickDto dto) {
+
+        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
+                dto.getServiceId().toString() +
+                getSecretKey() +
+                dto.getMerchantTransId() +
+                Math.round(dto.getAmount()) +
+                dto.getAction().toString() +
+                dto.getSignTime());
+
+        ClickPayment payment = new ClickPayment();
+
+        payment.setClickTransId(dto.getClickTransId());
+        payment.setAmount(dto.getAmount());
+
+        if (!dto.getSignString().equals(signKey)) {
+            payment.setError(-1);
+            payment.setErrorNote("SIGN CHECK FAILED");
+        } else {
+
+            String orderId = dto.getMerchantTransId();
+
+            try {
+
+                Optional<Order> optionalOrder = orderRepository.findById(Long.parseLong(orderId));
+
+                if (optionalOrder.isEmpty()) {
+                    payment.setError(-5);
+                    payment.setErrorNote("Order does not exist");
+                } else {
+
+                    if (optionalOrder.get().getTotalPrice() == dto.getAmount()) {
+                        payment.setError(0);
+                        payment.setErrorNote("SUCCESS");
+                    } else {
+                        payment.setError(-2);
+                        payment.setErrorNote("Incorrect parameter amount");
+                    }
+                }
+            } catch (Exception e) {
+                payment.setError(-5);
+                payment.setErrorNote("Order does not exist");
+            }
+        }
+
+        ClickDto response = new ClickDto();
+
+        if (payment.getError() == 0) {
+            payment = clickPaymentRepository.save(payment);
+            response.setMerchantPrepareId(payment.getId());
+        }
+
+        response.setClickTransId(dto.getClickTransId());
+        response.setMerchantTransId(dto.getMerchantTransId());
+        response.setError(payment.getError());
+        response.setErrorNote(payment.getErrorNote());
+
+        return response;
+
     }
 
     @Override
-    public ClickInvoiceStatusDto checkInvoice(String phoneNumber) {
-        HttpEntity<ClickInvoiceStatusDto> entity = new HttpEntity<>(headers);
-        return restTemplate.exchange(
-                BASE_URL + "status",
+    public ClickDto complete(ClickDto dto) {
+
+        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
+                dto.getServiceId().toString() +
+                getSecretKey() +
+                dto.getMerchantTransId() +
+                dto.getMerchantPrepareId().toString() +
+                Math.round(dto.getAmount()) +
+                dto.getAction().toString() +
+                dto.getSignTime());
+
+        ClickDto response = new ClickDto();
+
+        response.setClickTransId(dto.getClickTransId());
+        response.setMerchantTransId(dto.getMerchantTransId());
+
+        if (!dto.getSignString().equals(signKey)) {
+            response.setError(-1);
+            response.setErrorNote("SIGN CHECK FAILED!");
+        } else {
+
+            Optional<ClickPayment> paymentOptional = clickPaymentRepository.findById(dto.getMerchantPrepareId());
+
+            if (paymentOptional.isEmpty()) {
+                response.setError(-6);
+                response.setErrorNote("Transactions does not exist");
+            } else {
+                try {
+
+                    String orderId = dto.getMerchantTransId();
+
+                    Optional<Order> orderOptional = orderRepository.findById(Long.parseLong(orderId));
+
+                    if (orderOptional.isEmpty()) {
+                        response.setError(-5);
+                        response.setErrorNote("Order not found!");
+                    } else {
+                        Order order = orderOptional.get();
+
+                        if (order.isCancelled()) {
+                            response.setError(-9);
+                            response.setErrorNote("Transactions cancelled");
+                        } else if (order.isPaid()) {
+                            response.setError(-4);
+                            response.setErrorNote("Already paid");
+                        } else {
+                            if (order.getTotalPrice() == dto.getAmount() && dto.getError() == 0) {
+
+                                order.setPaid(true);
+                                response.setError(0);
+                                response.setErrorNote("SUCCESS");
+
+                                response.setMerchantConfirmId(paymentOptional.get().getId());
+                            } else {
+                                response.setError(-2);
+                                response.setErrorNote("Incorrect parameter amount");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    response.setError(-9);
+                    response.setErrorNote("Transactions cancelled");
+                }
+            }
+
+        }
+
+        return response;
+    }
+
+    @Override
+    public void sendInvoice(Long orderId, String phoneNumber) {
+        Order order = orderRepository.findById(orderId).orElseThrow(
+                () -> new NotFoundException("Order")
+        );
+        HttpEntity<ClickInvoiceDto> entity = new HttpEntity<>(
+                ClickInvoiceDto.builder()
+                        .serviceId(getServiceId())
+                        .amount(order.getTotalPrice().floatValue())
+                        .phoneNumber(phoneNumber)
+                        .merchantTransId(orderId.toString())
+                        .build(), headers);
+
+        ClickInvoiceDto body = restTemplate.exchange(
+                CLICK_INVOICE_URL + "/invoice/create",
+                HttpMethod.POST,
+                entity,
+                ClickInvoiceDto.class
+        ).getBody();
+
+        assert body != null;
+        order.setInvoiceId(body.getInvoiceId().toString());
+
+        orderRepository.save(order);
+
+    }
+
+    @Override
+    public boolean checkInvoice(String phoneNumber) {
+        HttpEntity<ClickInvoiceDto> entity = new HttpEntity<>(headers);
+
+        Order order = orderRepository.findByPhoneNumber(phoneNumber)
+                .orElseGet(Order::new);
+
+        ClickInvoiceDto body = restTemplate.exchange(
+                CLICK_INVOICE_URL + "/payment/status_by_mti/" + getServiceId() + "/" + order.getId(),
                 HttpMethod.GET,
                 entity,
-                ClickInvoiceStatusDto.class
+                ClickInvoiceDto.class
         ).getBody();
+
+        assert body != null;
+
+        return body.getPaymentStatus() == 0 && order.isPaid();
+    }
+
+
+    public Integer getServiceId() {
+        return Integer.parseInt(Objects.requireNonNull(env.getProperty("CLICK_SERVICE_ID")));
+    }
+
+    public String getSecretKey() {
+        return env.getProperty("CLICK_SECRET_KEY");
     }
 
     @SneakyThrows
@@ -80,4 +244,30 @@ public class PaymentServiceClickImpl implements PaymentService {
         }
         return hexString.toString();
     }
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class ClickInvoiceDto {
+        @JsonProperty("service_id")
+        private Integer serviceId;
+        private Float amount;
+        @JsonProperty("phone_number")
+        private String phoneNumber;
+        @JsonProperty("merchant_trans_id")
+        private String merchantTransId;
+        @JsonProperty("error_code")
+        private Integer errorCode;
+        @JsonProperty("error_note")
+        private String errorNote;
+        @JsonProperty("invoice_id")
+        private Long invoiceId;
+        @JsonProperty("payment_id")
+        private Long paymentId;
+        @JsonProperty("payment_status")
+        private Integer paymentStatus;
+    }
+
 }
