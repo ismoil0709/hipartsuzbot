@@ -3,7 +3,6 @@ package uz.hiparts.hipartsuz.service.impl;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,10 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
-    private final Environment env;
     private final OrderRepository orderRepository;
     private final ClickPaymentRepository clickPaymentRepository;
-    private final SendMessageService sendMessageService;
 
     private static final String CLICK_INVOICE_URL = "https://api.click.uz/v2/merchant";
     private final RestTemplate restTemplate = new RestTemplate();
@@ -225,11 +222,11 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
 
     public Integer getServiceId() {
-        return Integer.parseInt(Objects.requireNonNull(env.getProperty("CLICK_SERVICE_ID")));
+        return Integer.parseInt(Objects.requireNonNull(System.getenv("CLICK_SERVICE_ID")));
     }
 
     public String getSecretKey() {
-        return env.getProperty("CLICK_SECRET_KEY");
+        return System.getenv("CLICK_SECRET_KEY");
     }
 
     @SneakyThrows

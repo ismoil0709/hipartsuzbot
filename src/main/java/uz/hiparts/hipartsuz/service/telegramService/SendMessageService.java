@@ -151,7 +151,7 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.CATALOG_MESSAGE, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, telegramUser.getChatId()), "https://autoexpo2024.uz")
+                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, telegramUser.getChatId()), "https://hipartsuz-front.vercel.app/")
                 ))
                 .build();
     }
@@ -342,7 +342,7 @@ public class SendMessageService {
                                 KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_REMOVE_ADMIN, chatId), Callback.REMOVE_ADMIN.getCallback())
                         ))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
-                .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://autoexpo2024.uz")))
+                .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
                 .build();
 
         return SendMessage.builder()
