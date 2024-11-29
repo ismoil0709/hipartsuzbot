@@ -30,9 +30,4 @@ public class TelegramController {
             telegramService.handleCallbackQuery(update.getCallbackQuery());
         }
     }
-    @PostMapping("/click/prepare")
-    public ResponseEntity<?> prepare(@RequestBody PrepareRequestDto dto){
-        System.out.println(dto.toString());
-        return ResponseEntity.ok(new CompleteResponseDto(dto.getClickTransId(),dto.getMerchantTransId(),null,0,""));
-    }
 }

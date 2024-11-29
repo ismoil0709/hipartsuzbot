@@ -29,27 +29,30 @@ public class BotUtils {
     private static final String FILE_URL = "https://api.telegram.org/file/bot";
     private static final String BOT_TOKEN = "6412338008:AAFcXM2MXc2mCSUb3Rv3U1fP_JRY9GA77_A/";
     private static final RestTemplate restTemplate = new RestTemplate();
-    public static <T extends Serializable,Method extends BotApiMethod<T>> void send(Method method) {
-        restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(),method, TelegramResultDto.class);
+
+    public static <T extends Serializable, Method extends BotApiMethod<T>> void send(Method method) {
+        restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(), method, TelegramResultDto.class);
     }
+
     public static void send(SendPhoto method) {
-        Map<String,String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("chat_id", method.getChatId());
-        map.put("photo",method.getFile().getAttachName());
-        map.put("caption",method.getCaption());
+        map.put("photo", method.getFile().getAttachName());
+        map.put("caption", method.getCaption());
         HttpEntity<?> requestEntity = new HttpEntity<>(map);
-        restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(),HttpMethod.POST,requestEntity, Void.class);
+        restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(), HttpMethod.POST, requestEntity, Void.class);
     }
+
     @SneakyThrows
     public static String getFile(String fileId) {
         try {
-            String fileName = UUID.randomUUID(  ) + ".jpg";
+            String fileName = UUID.randomUUID() + ".jpg";
             FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
             if (response != null && response.isOk()) {
                 String filePath = response.getResult().getFilePath();
                 byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
                 if (fileBytes != null) {
-                    Files.write(Paths.get("src","main","resources","static","product_photo",fileName),fileBytes, StandardOpenOption.CREATE);
+                    Files.write(Paths.get("src", "main", "resources", "static", "product_photo", fileName), fileBytes, StandardOpenOption.CREATE);
                     System.out.println("File downloaded successfully.");
                 } else {
                     System.out.println("Failed to download the file.");
@@ -58,9 +61,9 @@ public class BotUtils {
                 System.out.println("Failed to get file path");
             }
             return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            return "";
         }
-        return "";
     }
 
     @Setter
@@ -70,6 +73,7 @@ public class BotUtils {
         private BotUtils.File result;
 
     }
+
     @Getter
     @Setter
     @ToString
@@ -79,19 +83,21 @@ public class BotUtils {
         @JsonProperty("file_path")
         private String filePath;
     }
-    public static String getWebhookUrl(){
+
+    public static String getWebhookUrl() {
         WebHookResult resultDto = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "/getWebhookInfo", WebHookResult.class);
         System.out.println(resultDto);
-        if (resultDto != null ){
-            if (resultDto.getResult().getUrl() != null){
+        if (resultDto != null) {
+            if (resultDto.getResult().getUrl() != null) {
                 return resultDto.getResult().getUrl();
             }
         }
         return "";
     }
+
     @AllArgsConstructor
     @Getter
-    private static class WebHookResult{
+    private static class WebHookResult {
         private boolean ok;
         private WebhookInfo result;
     }
