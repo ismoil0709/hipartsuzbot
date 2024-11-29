@@ -11,7 +11,7 @@ import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/api/v1/payment")
 @RequiredArgsConstructor
 public class PaymentController {
 
