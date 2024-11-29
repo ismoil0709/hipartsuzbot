@@ -42,21 +42,25 @@ public class BotUtils {
     }
     @SneakyThrows
     public static String getFile(String fileId) {
-        String fileName = UUID.randomUUID(  ) + ".jpg";
-        FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
-        if (response != null && response.isOk()) {
-            String filePath = response.getResult().getFilePath();
-            byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
-            if (fileBytes != null) {
-                Files.write(Paths.get("src","main","resources","static","product_photo",fileName),fileBytes, StandardOpenOption.CREATE);
-                System.out.println("File downloaded successfully.");
+        try {
+            String fileName = UUID.randomUUID(  ) + ".jpg";
+            FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
+            if (response != null && response.isOk()) {
+                String filePath = response.getResult().getFilePath();
+                byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
+                if (fileBytes != null) {
+                    Files.write(Paths.get("src","main","resources","static","product_photo",fileName),fileBytes, StandardOpenOption.CREATE);
+                    System.out.println("File downloaded successfully.");
+                } else {
+                    System.out.println("Failed to download the file.");
+                }
             } else {
-                System.out.println("Failed to download the file.");
+                System.out.println("Failed to get file path");
             }
-        } else {
-            System.out.println("Failed to get file path");
+            return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
+        } catch (Exception ignored) {
         }
-        return "http://localhost:8080/api/v1/image/get/" + fileName;
+        return "";
     }
 
     @Setter
