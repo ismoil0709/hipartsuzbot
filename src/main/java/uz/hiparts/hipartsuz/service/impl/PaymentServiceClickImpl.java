@@ -2,6 +2,7 @@ package uz.hiparts.hipartsuz.service.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,13 +17,13 @@ import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.repository.ClickPaymentRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.service.PaymentService;
-import uz.hiparts.hipartsuz.service.telegramService.SendMessageService;
 
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
@@ -52,6 +53,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 dto.getAction().toString() +
                 dto.getSignTime());
 
+        log.info("Sign key created : {}", signKey);
+
         ClickPayment payment = new ClickPayment();
 
         payment.setClickTransId(dto.getClickTransId());
@@ -60,6 +63,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         if (!dto.getSignString().equals(signKey)) {
             payment.setError(-1);
             payment.setErrorNote("SIGN CHECK FAILED");
+            log.warn("Sign check failed");
         } else {
 
             String orderId = dto.getMerchantTransId();
@@ -71,19 +75,23 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 if (optionalOrder.isEmpty()) {
                     payment.setError(-5);
                     payment.setErrorNote("Order does not exist");
+                    log.warn("Order does not exist");
                 } else {
 
                     if (optionalOrder.get().getTotalPrice() == dto.getAmount()) {
                         payment.setError(0);
                         payment.setErrorNote("SUCCESS");
+                        log.info("successfully prepared");
                     } else {
                         payment.setError(-2);
                         payment.setErrorNote("Incorrect parameter amount");
+                        log.warn("Incorrect parameter amount");
                     }
                 }
             } catch (Exception e) {
                 payment.setError(-5);
                 payment.setErrorNote("Order does not exist");
+                log.warn("something went wrong");
             }
         }
 
@@ -99,6 +107,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         response.setError(payment.getError());
         response.setErrorNote(payment.getErrorNote());
 
+
+        log.warn("Prepare method completed");
         return response;
 
     }
@@ -115,6 +125,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 dto.getAction().toString() +
                 dto.getSignTime());
 
+        log.info("Sign key created : {}", signKey);
+
         ClickDto response = new ClickDto();
 
         response.setClickTransId(dto.getClickTransId());
@@ -123,6 +135,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         if (!dto.getSignString().equals(signKey)) {
             response.setError(-1);
             response.setErrorNote("SIGN CHECK FAILED!");
+            log.warn("Sign check failed");
         } else {
 
             Optional<ClickPayment> paymentOptional = clickPaymentRepository.findById(dto.getMerchantPrepareId());
@@ -130,6 +143,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
             if (paymentOptional.isEmpty()) {
                 response.setError(-6);
                 response.setErrorNote("Transactions does not exist");
+                log.warn("Transactions does not exist");
             } else {
                 try {
 
@@ -140,15 +154,18 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                     if (orderOptional.isEmpty()) {
                         response.setError(-5);
                         response.setErrorNote("Order not found!");
+                        log.warn("Order does not exist");
                     } else {
                         Order order = orderOptional.get();
 
                         if (order.isCancelled()) {
                             response.setError(-9);
                             response.setErrorNote("Transactions cancelled");
+                            log.warn("Transactions cancelled");
                         } else if (order.isPaid()) {
                             response.setError(-4);
                             response.setErrorNote("Already paid");
+                            log.warn("Already paid");
                         } else {
                             if (order.getTotalPrice() == dto.getAmount() && dto.getError() == 0) {
 
@@ -157,15 +174,18 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                                 response.setErrorNote("SUCCESS");
 
                                 response.setMerchantConfirmId(paymentOptional.get().getId());
+                                log.info("Success");
                             } else {
                                 response.setError(-2);
                                 response.setErrorNote("Incorrect parameter amount");
+                                log.warn("Incorrect parameter amount");
                             }
                         }
                     }
                 } catch (Exception e) {
                     response.setError(-9);
                     response.setErrorNote("Transactions cancelled");
+                    log.warn("Transactions cancelled");
                 }
             }
 
