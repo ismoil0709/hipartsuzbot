@@ -2,10 +2,7 @@ package uz.hiparts.hipartsuz.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uz.hiparts.hipartsuz.dto.ClickDto;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
 
@@ -19,10 +16,10 @@ public class PaymentController {
     private final PaymentServiceClickImpl paymentServiceClick;
 
     @PostMapping(value = "/click/prepare",
-            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE},
+            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ClickDto prepareClick(@RequestBody ClickDto dto){
+    public ClickDto prepareClick(@ModelAttribute ClickDto dto){
         return paymentServiceClick.prepare(dto);
     }
 
@@ -33,10 +30,10 @@ public class PaymentController {
     }
 
     @PostMapping(value = "/click/prepare",
-            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE,MediaType.APPLICATION_JSON_VALUE},
+            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ClickDto completeClick(@RequestBody ClickDto dto){
+    public ClickDto completeClick(@ModelAttribute ClickDto dto){
         return paymentServiceClick.complete(dto);
     }
 
