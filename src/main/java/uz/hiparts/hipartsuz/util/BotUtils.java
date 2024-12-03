@@ -17,8 +17,10 @@ import uz.hiparts.hipartsuz.dto.TelegramResultDto;
 
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileAttribute;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +53,9 @@ public class BotUtils {
                 String filePath = response.getResult().getFilePath();
                 byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
                 if (fileBytes != null) {
-                    Files.write(Paths.get("src", "main", "resources", "static", "product_photo", fileName), fileBytes, StandardOpenOption.CREATE);
+                    Path path = Path.of("src", "main", "resources", "static", "product_photo", fileName);
+                    Files.createFile(path);
+                    Files.write(path, fileBytes, StandardOpenOption.CREATE);
                     System.out.println("File downloaded successfully.");
                 } else {
                     System.out.println("Failed to download the file.");
