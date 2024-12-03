@@ -29,7 +29,7 @@ public class PaymentController {
         return null;
     }
 
-    @PostMapping(value = "/click/prepare",
+    @PostMapping(value = "/click/complete",
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
