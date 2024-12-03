@@ -12,13 +12,13 @@ import lombok.*;
 public class ClickDto {
 
     @JsonProperty(value = "click_trans_id")
-    private Integer clickTransId;
+    private Long clickTransId;
 
     @JsonProperty(value = "service_id")
-    private Integer serviceId;
+    private Long serviceId;
 
     @JsonProperty(value = "click_paydoc_id")
-    private Integer clickPaydocId;
+    private Long clickPaydocId;
 
     @JsonProperty(value = "merchant_trans_id")
     private String merchantTransId;
@@ -33,10 +33,10 @@ public class ClickDto {
     private float amount;
 
     @JsonProperty(value = "action")
-    private Integer action;
+    private Long action;
 
     @JsonProperty(value = "error")
-    private Integer error;
+    private Long error;
 
     @JsonProperty(value = "error_note")
     private String errorNote;

@@ -18,18 +18,18 @@ public class ClickPayment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer clickTransId;
+    private Long clickTransId;
 
-    private Integer serviceId;
+    private Long serviceId;
 
     //Номер платежа в системе CLICK. Отображается в СМС у клиента при оплате.
-    private Integer clickPaydocId;
+    private Long clickPaydocId;
 
     private String merchantTransId;
 
     private float amount;
 
-    private Integer error;
+    private Long error;
 
     private String errorNote;
 
