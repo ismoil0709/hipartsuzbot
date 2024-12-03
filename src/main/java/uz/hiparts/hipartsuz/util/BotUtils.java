@@ -53,9 +53,7 @@ public class BotUtils {
                 String filePath = response.getResult().getFilePath();
                 byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
                 if (fileBytes != null) {
-                    Path path = Path.of("src", "main", "resources", "static", "product_photo", fileName);
-                    Files.createFile(path);
-                    Files.write(path, fileBytes, StandardOpenOption.CREATE);
+                    Files.write(Path.of(System.getProperty("user.home") + "/product_photo" + fileName), fileBytes, StandardOpenOption.CREATE);
                     System.out.println("File downloaded successfully.");
                 } else {
                     System.out.println("Failed to download the file.");
