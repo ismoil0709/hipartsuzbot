@@ -173,6 +173,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                                 response.setError(0L);
                                 response.setErrorNote("SUCCESS");
 
+                                orderRepository.save(order);
                                 response.setMerchantConfirmId(paymentOptional.get().getId());
                                 log.info("Success");
                             } else {

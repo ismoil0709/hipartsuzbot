@@ -45,7 +45,6 @@ public class BotUtils {
 
     @SneakyThrows
     public static String getFile(String fileId) {
-        try {
             String fileName = UUID.randomUUID() + ".jpg";
             FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
             if (response != null && response.isOk()) {
@@ -61,9 +60,6 @@ public class BotUtils {
                 System.out.println("Failed to get file path");
             }
             return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
-        } catch (Exception ex) {
-            return "";
-        }
     }
 
     @Setter
