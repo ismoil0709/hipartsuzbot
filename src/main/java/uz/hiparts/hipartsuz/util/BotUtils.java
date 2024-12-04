@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.WebhookInfo;
 import uz.hiparts.hipartsuz.dto.TelegramResultDto;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,24 +46,44 @@ public class BotUtils {
         restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(), HttpMethod.POST, requestEntity, Void.class);
     }
 
-    @SneakyThrows
     public static String getFile(String fileId) {
-            String fileName = UUID.randomUUID() + ".jpg";
+        String directoryPath = System.getProperty("user.home") + "/product_photo";
+        Path directory = Path.of(directoryPath);
+        String fileName;
+
+        try {
+            if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+            }
             FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
+
             if (response != null && response.isOk()) {
-                String filePath = response.getResult().getFilePath();
-                byte[] fileBytes = restTemplate.getForObject(FILE_URL + BOT_TOKEN + filePath, byte[].class);
+                String originalFilePath = response.getResult().getFilePath();
+                String fileExtension = originalFilePath.substring(originalFilePath.lastIndexOf('.'));
+                fileName = UUID.randomUUID() + fileExtension;
+
+                String fileUrl = FILE_URL + BOT_TOKEN + originalFilePath;
+                byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
+
                 if (fileBytes != null) {
-                    Files.write(Path.of(System.getProperty("user.home") + "/product_photo" + fileName), fileBytes, StandardOpenOption.CREATE);
-                    System.out.println("File downloaded successfully.");
+                    Files.write(directory.resolve(fileName), fileBytes, StandardOpenOption.CREATE);
+                    System.out.println("File downloaded successfully: " + fileName);
                 } else {
                     System.out.println("Failed to download the file.");
+                    return null;
                 }
             } else {
-                System.out.println("Failed to get file path");
+                System.out.println("Failed to get file path.");
+                return null;
             }
-            return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
+        } catch (IOException ex) {
+            System.err.println("Error occurred: " + ex.getMessage());
+            return null;
+        }
+
+        return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
     }
+
 
     @Setter
     @Getter
