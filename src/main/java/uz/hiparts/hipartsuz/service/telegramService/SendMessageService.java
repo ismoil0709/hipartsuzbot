@@ -151,7 +151,7 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.CATALOG_MESSAGE, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, telegramUser.getChatId()), "https://hipartsuz-front.vercel.app/")
+                        KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, telegramUser.getChatId()), "https://hipartsbot.uz/?lan=" + telegramUser.getLang())
                 ))
                 .build();
     }

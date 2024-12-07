@@ -27,10 +27,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @NotNull
-    @ManyToMany
-    @ToString.Exclude
-    private List<Product> products;
-    @NotNull
     @ManyToOne
     private User user;
     @NotNull

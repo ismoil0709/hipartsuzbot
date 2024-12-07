@@ -24,16 +24,16 @@ public class OrderDto {
     private LocalDateTime time;
     private Double totalPrice;
     private String comment;
-    private List<ProductQuantity> productQuantities;
+    private List<ProductQuantitiesDto> productQuantities;
     public OrderDto(Order order) {
         this.userId = order.getUser().getId();
-        this.productIds = order.getProducts().stream()
-                .map(Product::getId)
-                .collect(Collectors.toList());
         this.paymentType = order.getPaymentType();
         this.time = order.getTime();
         this.totalPrice = order.getTotalPrice();
         this.comment = order.getComment();
-        this.productQuantities = order.getProductQuantities();
+        this.productQuantities = order.getProductQuantities()
+                .stream()
+                .map(productQuantity -> new ProductQuantitiesDto(productQuantity.getProduct().getId(), productQuantity.getQuantity()))
+                .toList();
     }
 }

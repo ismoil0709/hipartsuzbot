@@ -7,6 +7,7 @@ import uz.hiparts.hipartsuz.exception.InvalidArgumentException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.exception.NullOrEmptyException;
 import uz.hiparts.hipartsuz.model.Order;
+import uz.hiparts.hipartsuz.model.ProductQuantity;
 import uz.hiparts.hipartsuz.model.User;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
@@ -31,25 +32,28 @@ public class OrderServiceImpl implements OrderService {
     private final SendMessageService sendMessageService;
 
     @Override
-    public void create(OrderDto order) {
+        public void create(OrderDto order) {
         if (UtilLists.orderMap.get(order.getUserId()) == null)
             throw new InvalidArgumentException("Please restart bot with /start");
         Order existsOrder = UtilLists.orderMap.get(order.getUserId());
         existsOrder.setPaymentType(order.getPaymentType());
         existsOrder.setTime(order.getTime());
         existsOrder.setComment(order.getComment());
-        existsOrder.setProducts(order.getProductIds().stream().map(
-                id-> productRepository.findById(id).orElseThrow(
-                        ()->new NotFoundException("Product")
-                )
-        ).toList());
-        existsOrder.setProductQuantities(order.getProductQuantities());
+        existsOrder.setProductQuantities(
+                order.getProductQuantities().stream().map(productQuantitiesDto ->
+                        ProductQuantity.builder()
+                        .product(productRepository.findById(productQuantitiesDto.getProductId()).orElseThrow(
+                                ()->new NotFoundException("Product")
+                        ))
+                        .quantity(productQuantitiesDto.getQuantity())
+                        .build()).toList()
+        );
         existsOrder.setTotalPrice(order.getTotalPrice());
         existsOrder.setActive(true);
         existsOrder.setUser(userRepository.findByChatId(order.getUserId()).orElseThrow(
                 ()->new NotFoundException("User")
         ));
-        existsOrder.getProducts().forEach(p-> p.setPrice(p.getPrice() - ((p.getPrice() * p.getDiscount()) / 100)));
+        existsOrder.getProductQuantities().forEach(p-> p.getProduct().setPrice(p.getProduct().getPrice() - ((p.getProduct().getPrice() * p.getProduct().getDiscount()) / 100)));
         BotUtils.send(sendMessageService.sendOrderDetails(existsOrder));
         BotUtils.send(sendMessageService.sendOrderConfirmation(existsOrder));
     }
