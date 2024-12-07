@@ -1,6 +1,5 @@
 package uz.hiparts.hipartsuz.controller;
 
-import lombok.SneakyThrows;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,14 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/v1/image")
 public class ImageController {
     @GetMapping("/get/{fileName}")
     public ResponseEntity<?> loadImage(@PathVariable String fileName) {
-        String directoryPath = System.getProperty("user.home") + "/product_photo";
+        String directoryPath = "/home/user/product_photo";
         Path filePath = Path.of(directoryPath, fileName);
 
         try {

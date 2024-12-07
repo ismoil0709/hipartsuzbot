@@ -47,7 +47,7 @@ public class BotUtils {
     }
 
     public static String getFile(String fileId) {
-        String directoryPath = System.getProperty("user.home") + "/product_photo";
+        String directoryPath = "/home/user/product_photo";
         Path directory = Path.of(directoryPath);
         String fileName;
 

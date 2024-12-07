@@ -15,6 +15,7 @@ public class HipartsuzApplication {
     @Bean
     CommandLineRunner commandLineRunner(BotSettingsRepository botSettingsRepository) {
         return args -> {
+            System.out.println(System.getProperty("user.home"));
             if (botSettingsRepository.findById(1L).isEmpty()) {
                 botSettingsRepository.save(BotSettings.builder()
                                 .currency("0")
