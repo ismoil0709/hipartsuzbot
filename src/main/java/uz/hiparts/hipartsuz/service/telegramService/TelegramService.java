@@ -34,11 +34,14 @@ import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.service.impl.ExportXLSXFile;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
+import uz.hiparts.hipartsuz.service.impl.ProductServiceImpl;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +61,7 @@ public class TelegramService {
     private final BotSettingsService botSettingsService;
     private final PaymentServiceClickImpl paymentServiceClickImpl;
     private final OrderRepository orderRepository;
+    private final ExportXLSXFile exportXLSXFile;
 
     public void handleMessage(Message message) {
         if (message.hasText()) {
@@ -323,6 +327,19 @@ public class TelegramService {
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 }
                 else BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
+            }
+            case DELETE_PRODUCT -> {
+                productService.delete(UtilLists.productUpdate.get(telegramUser.getChatId()).getId());
+                telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.DEFAULT);
+                BotUtils.send(sendMessageService.successfully(telegramUser));
+                BotUtils.send(sendMessageService.adminPanel(telegramUser));
+            }
+            case EXPORT_PRODUCTS -> {
+                try {
+                 exportXLSXFile.exportXLSXFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

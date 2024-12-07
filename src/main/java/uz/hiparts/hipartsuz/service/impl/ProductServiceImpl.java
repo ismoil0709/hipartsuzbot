@@ -84,4 +84,6 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> getAll() {
         return productRepository.findAll().stream().map(ProductDto::new).toList();
     }
+
+
 }
