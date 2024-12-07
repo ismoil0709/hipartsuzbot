@@ -54,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
                 ()->new NotFoundException("User")
         ));
         existsOrder.getProductQuantities().forEach(p-> p.getProduct().setPrice(p.getProduct().getPrice() - ((p.getProduct().getPrice() * p.getProduct().getDiscount()) / 100)));
+        UtilLists.orderMap.put(order.getUserId(), existsOrder);
         BotUtils.send(sendMessageService.sendOrderDetails(existsOrder));
         BotUtils.send(sendMessageService.sendOrderConfirmation(existsOrder));
     }
