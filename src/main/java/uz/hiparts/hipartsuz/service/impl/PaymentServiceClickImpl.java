@@ -243,11 +243,11 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
 
     public Integer getServiceId() {
-        return Integer.parseInt(Objects.requireNonNull(System.getenv("CLICK_SERVICE_ID")));
+        return 28003;
     }
 
     public String getSecretKey() {
-        return System.getenv("CLICK_SECRET_KEY");
+        return "iCUfO2CfZkSg";
     }
 
     @SneakyThrows
