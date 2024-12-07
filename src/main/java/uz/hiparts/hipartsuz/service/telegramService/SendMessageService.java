@@ -343,6 +343,7 @@ public class SendMessageService {
                         ))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
+                .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCT, chatId),Callback.EXPORT_PRODUCTS.getCallback())))
                 .build();
 
         return SendMessage.builder()
@@ -592,10 +593,14 @@ public class SendMessageService {
                                 Callback.CHANGE_PRODUCT_CATEGORY.getCallback()),
                         KeyboardUtils.inlineButton(
                                 langService.getMessage(LangFields.BUTTON_CONFIRM_PRODUCT_CHANGES, telegramUser.getChatId()),
-                                Callback.CONFIRM_PRODUCT_CHANGES.getCallback()
-                        )))
+                                Callback.CONFIRM_PRODUCT_CHANGES.getCallback()),
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_DELETE_PRODUCT, telegramUser.getChatId()),
+                                Callback.DELETE_PRODUCT.getCallback())
+                ))
                 .build();
     }
+    //TODO write method to send excel file
 
     public EditMessageText setAdminMethod(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
