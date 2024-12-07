@@ -7,8 +7,13 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -45,6 +50,23 @@ public class BotUtils {
         HttpEntity<?> requestEntity = new HttpEntity<>(map);
         restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(), HttpMethod.POST, requestEntity, Void.class);
     }
+
+    public static void sendFile(Long chatId, String filePath) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = BASE_URL + BOT_TOKEN + "/sendDocument";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("chat_id", chatId);
+        body.add("document", new FileSystemResource(filePath));
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        System.out.println("File uploaded successfully!");
+    }
+
 
     public static String getFile(String fileId) {
         String fileUrl = "";

@@ -336,7 +336,7 @@ public class TelegramService {
             }
             case EXPORT_PRODUCTS -> {
                 try {
-                 exportXLSXFile.exportXLSXFile();
+                 BotUtils.sendFile(callbackQuery.getMessage().getChatId(),exportXLSXFile.exportXLSXFile());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
