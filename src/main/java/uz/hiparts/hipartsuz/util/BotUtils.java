@@ -47,6 +47,7 @@ public class BotUtils {
     }
 
     public static String getFile(String fileId) {
+        String fileUrl = "";
         String directoryPath = "/home/user/product_photo";
         Path directory = Path.of(directoryPath);
         String fileName;
@@ -62,7 +63,7 @@ public class BotUtils {
                 String fileExtension = originalFilePath.substring(originalFilePath.lastIndexOf('.'));
                 fileName = UUID.randomUUID() + fileExtension;
 
-                String fileUrl = FILE_URL + BOT_TOKEN + originalFilePath;
+                fileUrl = FILE_URL + BOT_TOKEN + originalFilePath;
                 byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
 
                 if (fileBytes != null) {
@@ -70,18 +71,18 @@ public class BotUtils {
                     System.out.println("File downloaded successfully: " + fileName);
                 } else {
                     System.out.println("Failed to download the file.");
-                    return null;
+                    return fileUrl;
                 }
             } else {
                 System.out.println("Failed to get file path.");
-                return null;
+                return fileUrl;
             }
         } catch (IOException ex) {
             System.err.println("Error occurred: " + ex.getMessage());
-            return null;
+            return fileUrl;
         }
 
-        return "https://hipartsbot.uz/api/v1/image/get/" + fileName;
+        return fileUrl;
     }
 
 
@@ -89,7 +90,7 @@ public class BotUtils {
     @Getter
     private static class FileResponse {
         private boolean ok;
-        private BotUtils.File result;
+        private File result;
 
     }
 
