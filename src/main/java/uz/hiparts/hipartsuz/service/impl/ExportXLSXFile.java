@@ -41,7 +41,7 @@ public class ExportXLSXFile {
             row.createCell(7).setCellValue(String.valueOf(products.get(i).isActive()));
             row.createCell(8).setCellValue(String.valueOf(products.get(i).getDiscount()));
         }
-        Path UPLOAD_DIR = Path.of("/home/user/product_photo" + File.separator);
+        Path UPLOAD_DIR = Path.of("/home/user/product_photo/");
         FileOutputStream out;
         out = new FileOutputStream(UPLOAD_DIR + "products.xlsx");
         workbook.write(out);

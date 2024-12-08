@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDto> getAll() {
-        return productRepository.findAll().stream().map(ProductDto::new).toList();
+        return productRepository.findAllByActive(true).stream().map(ProductDto::new).toList();
     }
 
 
