@@ -1,13 +1,12 @@
 package uz.hiparts.hipartsuz.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Service;
-import uz.hiparts.hipartsuz.dto.ProductDto;
-import uz.hiparts.hipartsuz.service.ProductService;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import uz.hiparts.hipartsuz.dto.ProductDto;
+import uz.hiparts.hipartsuz.service.ProductService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,19 +15,26 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ExportXLSXFile {
     private final ProductService productService;
-    public XSSFWorkbook workbook = new XSSFWorkbook();
-    public XSSFSheet sheet = workbook.createSheet("Products");
-    private final Row headerRow = sheet.createRow(0);
-    public String[] columns = {"ID", "Name", "Description", "Price", "Img path", "Img ID", "Category", "Is active", "Discount"};
+
+    public ExportXLSXFile(ProductService productService) {
+        this.productService = productService;
+    }
+
     public String exportXLSXFile() throws IOException {
-        List<ProductDto> products = productService.getAll();
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Products");
+
+        String[] columns = {"ID", "Name", "Description", "Price", "Img path", "Img ID", "Category", "Is active", "Discount"};
+        Row headerRow = sheet.createRow(0);
+
         for (int i = 0; i < columns.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columns[i]);
         }
+
+        List<ProductDto> products = productService.getAll();
         for (int i = 0; i < products.size(); i++) {
             Row row = sheet.createRow(i + 1);
             row.createCell(0).setCellValue(products.get(i).getId());
@@ -41,11 +47,19 @@ public class ExportXLSXFile {
             row.createCell(7).setCellValue(String.valueOf(products.get(i).isActive()));
             row.createCell(8).setCellValue(String.valueOf(products.get(i).getDiscount()));
         }
+
         Path UPLOAD_DIR = Path.of("/home/user/product_photo/");
-        FileOutputStream out;
-        out = new FileOutputStream(UPLOAD_DIR + "products.xlsx");
-        workbook.write(out);
-        out.close();
-        return UPLOAD_DIR + "products.xlsx";
+        File uploadDir = UPLOAD_DIR.toFile();
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        Path outputFilePath = UPLOAD_DIR.resolve("products.xlsx");
+        try (FileOutputStream out = new FileOutputStream(outputFilePath.toFile())) {
+            workbook.write(out);
+        }
+
+        workbook.close();
+        return outputFilePath.toString();
     }
 }

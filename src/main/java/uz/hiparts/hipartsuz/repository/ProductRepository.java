@@ -17,5 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdAndActive(Long id, boolean active);
     @Query("SELECT p FROM Product p WHERE p.category = ?1 AND p.isActive = ?2")
     Optional<Product> findByCategoryAndActive(Category category, boolean active);
+    @Query("SELECT p FROM Product p WHERE p.isActive = ?1")
     List<Product> findAllByActive(boolean active);
 }
