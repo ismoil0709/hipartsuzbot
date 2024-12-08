@@ -218,11 +218,15 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
     }
 
     @Override
-    public boolean checkInvoice(String phoneNumber) {
+    public boolean checkInvoice(String invoiceId) {
         HttpEntity<ClickInvoiceDto> entity = new HttpEntity<>(headers);
 
-        Order order = orderRepository.findByPhoneNumber(phoneNumber)
-                .orElseGet(Order::new);
+        Optional<Order> optionalOrder = orderRepository.findByInvoiceId(invoiceId);
+        if (optionalOrder.isEmpty()) {
+            return false;
+        }
+
+        Order order = optionalOrder.get();
 
         ClickInvoiceDto body = restTemplate.exchange(
                 CLICK_INVOICE_URL + "/payment/status_by_mti/" + getServiceId() + "/" + order.getId(),

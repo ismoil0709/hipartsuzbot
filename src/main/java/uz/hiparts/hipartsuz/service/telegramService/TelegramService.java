@@ -320,7 +320,7 @@ public class TelegramService {
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
             case PAYED -> {
-                boolean isPaid = paymentServiceClickImpl.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getPhoneNumber());
+                boolean isPaid = paymentServiceClickImpl.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getInvoiceId());
 
                 if (isPaid){
                     BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));

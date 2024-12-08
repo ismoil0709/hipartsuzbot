@@ -18,6 +18,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByPhoneNumber(String phoneNumber);
+    @Query("SELECT o FROM Order o WHERE o.invoiceId = ?1")
+    Optional<Order> findByInvoiceId(String invoiceId);
 
     List<Order> findByOrderType(OrderType orderType);
     List<Order> findByUser(User user);
