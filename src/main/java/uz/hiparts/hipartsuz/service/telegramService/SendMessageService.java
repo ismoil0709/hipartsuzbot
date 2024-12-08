@@ -343,7 +343,7 @@ public class SendMessageService {
                         ))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
-                .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCT, chatId),Callback.EXPORT_PRODUCTS.getCallback())))
+                .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCTS, chatId),Callback.EXPORT_PRODUCTS.getCallback())))
                 .build();
 
         return SendMessage.builder()
