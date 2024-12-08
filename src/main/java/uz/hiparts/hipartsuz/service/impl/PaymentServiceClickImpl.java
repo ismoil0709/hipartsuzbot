@@ -213,6 +213,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         ).getBody();
 
         assert body != null;
+        System.out.println(body);
         order.setInvoiceId(body.getInvoiceId().toString());
         orderRepository.save(order);
     }
@@ -229,7 +230,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         Order order = optionalOrder.get();
 
         ClickInvoiceDto body = restTemplate.exchange(
-                CLICK_INVOICE_URL + "/payment/status_by_mti/" + getServiceId() + "/" + order.getId(),
+                CLICK_INVOICE_URL + "/invoice/status/" + getServiceId() + "/" + order.getInvoiceId(),
                 HttpMethod.GET,
                 entity,
                 ClickInvoiceDto.class
@@ -237,7 +238,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
         assert body != null;
 
-        return body.getPaymentStatus() == 0 && order.isPaid();
+        System.out.println(body);
+        return body.getInvoiceStatus() == 0 && order.isPaid();
     }
 
 
@@ -286,6 +288,10 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         private Long paymentId;
         @JsonProperty("payment_status")
         private Integer paymentStatus;
+        @JsonProperty("invoice_status")
+        private Integer invoiceStatus;
+        @JsonProperty("invoice_status_note")
+        private String invoiceStatusNote;
     }
 
 }
