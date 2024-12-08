@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uz.hiparts.hipartsuz.dto.ClickDto;
+import uz.hiparts.hipartsuz.dto.ClickSendInvoiceDto;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.ClickPayment;
 import uz.hiparts.hipartsuz.model.Order;
@@ -20,7 +21,6 @@ import uz.hiparts.hipartsuz.service.PaymentService;
 
 import java.security.MessageDigest;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Log4j2
@@ -45,26 +45,26 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
     @Override
     public ClickDto prepare(ClickDto dto) {
 
-//        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
-//                dto.getServiceId().toString() +
-//                getSecretKey() +
-//                dto.getMerchantTransId() +
-//                Math.round(dto.getAmount()) +
-//                dto.getAction().toString() +
-//                dto.getSignTime());
-//
-//        log.info("Sign key created : {}", signKey);
+        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
+                dto.getServiceId().toString() +
+                getSecretKey() +
+                dto.getMerchantTransId() +
+                Math.round(dto.getAmount()) +
+                dto.getAction().toString() +
+                dto.getSignTime());
+
+        log.info("Sign key created : {}", signKey);
 
         ClickPayment payment = new ClickPayment();
 
         payment.setClickTransId(dto.getClickTransId());
         payment.setAmount(dto.getAmount());
 
-//        if (!dto.getSignString().equals(signKey)) {
-//            payment.setError(-1L);
-//            payment.setErrorNote("SIGN CHECK FAILED");
-//            log.warn("Sign check failed");
-//        } else {
+        if (!dto.getSignString().equals(signKey)) {
+            payment.setError(-1L);
+            payment.setErrorNote("SIGN CHECK FAILED");
+            log.warn("Sign check failed");
+        } else {
 
             String orderId = dto.getMerchantTransId();
 
@@ -93,7 +93,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 payment.setErrorNote("Order does not exist");
                 log.warn("something went wrong");
             }
-//        }
+        }
 
         ClickDto response = new ClickDto();
 
@@ -116,27 +116,27 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
     @Override
     public ClickDto complete(ClickDto dto) {
 
-//        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
-//                dto.getServiceId().toString() +
-//                getSecretKey() +
-//                dto.getMerchantTransId() +
-//                dto.getMerchantPrepareId().toString() +
-//                Math.round(dto.getAmount()) +
-//                dto.getAction().toString() +
-//                dto.getSignTime());
+        String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
+                dto.getServiceId().toString() +
+                getSecretKey() +
+                dto.getMerchantTransId() +
+                dto.getMerchantPrepareId().toString() +
+                Math.round(dto.getAmount()) +
+                dto.getAction().toString() +
+                dto.getSignTime());
 
-//        log.info("Sign key created : {}", signKey);
+        log.info("Sign key created : {}", signKey);
 
         ClickDto response = new ClickDto();
 
         response.setClickTransId(dto.getClickTransId());
         response.setMerchantTransId(dto.getMerchantTransId());
 
-//        if (!dto.getSignString().equals(signKey)) {
-//            response.setError(-1L);
-//            response.setErrorNote("SIGN CHECK FAILED!");
-//            log.warn("Sign check failed");
-//        } else {
+        if (!dto.getSignString().equals(signKey)) {
+            response.setError(-1L);
+            response.setErrorNote("SIGN CHECK FAILED!");
+            log.warn("Sign check failed");
+        } else {
 
             Optional<ClickPayment> paymentOptional = clickPaymentRepository.findById(dto.getMerchantPrepareId());
 
@@ -190,24 +190,21 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 }
             }
 
-//        }
+        }
 
         return response;
     }
 
-    @Override
     public void sendInvoice(Long orderId, String phoneNumber) {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new NotFoundException("Order")
         );
-        HttpEntity<ClickInvoiceDto> entity = new HttpEntity<>(
-                ClickInvoiceDto.builder()
-                        .serviceId(getServiceId())
-                        .amount(order.getTotalPrice().floatValue())
-                        .phoneNumber(phoneNumber)
-                        .merchantTransId(orderId.toString())
-                        .build(), headers);
-
+        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
+                36335,
+                order.getTotalPrice().floatValue(),
+                phoneNumber,
+                orderId.toString()
+        ), headers);
         ClickInvoiceDto body = restTemplate.exchange(
                 CLICK_INVOICE_URL + "/invoice/create",
                 HttpMethod.POST,
@@ -217,9 +214,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
         assert body != null;
         order.setInvoiceId(body.getInvoiceId().toString());
-
         orderRepository.save(order);
-
     }
 
     @Override
@@ -266,6 +261,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
     @Getter
     @Setter
     @Builder
+    @ToString
     @NoArgsConstructor
     @AllArgsConstructor
     private static class ClickInvoiceDto {
