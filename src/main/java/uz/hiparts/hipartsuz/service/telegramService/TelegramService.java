@@ -304,7 +304,7 @@ public class TelegramService {
                 System.out.println(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()));
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
-                        paymentServiceClickImpl.sendInvoice(callbackQuery);
+                        paymentServiceClickImpl.sendInvoice(order);
                         BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
                     }
                 } else {

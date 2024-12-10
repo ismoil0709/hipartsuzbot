@@ -197,14 +197,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         return response;
     }
 
-    public void sendInvoice(CallbackQuery callbackQuery) {
-
-        Long chatId = callbackQuery.getMessage().getChatId();
-        Order order = UtilLists.orderMap.get(chatId);
-
+    public void sendInvoice(Order order) {
         order = orderRepository.save(order);
-        UtilLists.orderMap.put(chatId, order);
-
         HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
                 getServiceId(),
                 order.getTotalPrice().floatValue(),
@@ -221,7 +215,8 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         assert body != null;
         System.out.println(body);
         order.setInvoiceId(body.getInvoiceId().toString());
-        orderRepository.save(order);
+        order = orderRepository.save(order);
+        UtilLists.orderMap.put(order.getUser().getChatId(), order);
     }
 
     @Override
