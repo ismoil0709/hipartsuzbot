@@ -303,11 +303,10 @@ public class TelegramService {
             }
             case CONFIRM_ORDER_YES -> {
                 Order order = UtilLists.orderMap.get(callbackQuery.getMessage().getChatId());
-                order = orderRepository.save(order);
-                UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(), order);
+                System.out.println(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()));
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
-                        paymentServiceClickImpl.sendInvoice(order.getId(), order.getPhoneNumber());
+                        paymentServiceClickImpl.sendInvoice(callbackQuery);
                         BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
                     }
                 } else {
