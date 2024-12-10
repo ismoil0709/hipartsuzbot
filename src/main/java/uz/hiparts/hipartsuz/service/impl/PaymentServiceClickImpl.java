@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import uz.hiparts.hipartsuz.dto.ClickDto;
@@ -197,31 +198,31 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         return response;
     }
 
-    public void sendInvoice(CallbackQuery callbackQuery) {
+    @Transactional
+    public void sendInvoice(Order order) {
+        try {
+            order = orderRepository.save(order);
+            HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
+                    getServiceId(),
+                    order.getTotalPrice().floatValue(),
+                    order.getPhoneNumber(),
+                    order.getId().toString()
+            ), headers);
+            ClickInvoiceDto body = restTemplate.exchange(
+                    CLICK_INVOICE_URL + "/invoice/create",
+                    HttpMethod.POST,
+                    entity,
+                    ClickInvoiceDto.class
+            ).getBody();
 
-        Long chatId = callbackQuery.getMessage().getChatId();
-        Order order = UtilLists.orderMap.get(chatId);
-
-        order = orderRepository.save(order);
-        UtilLists.orderMap.put(chatId, order);
-
-        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                getServiceId(),
-                order.getTotalPrice().floatValue(),
-                order.getPhoneNumber(),
-                order.getId().toString()
-        ), headers);
-        ClickInvoiceDto body = restTemplate.exchange(
-                CLICK_INVOICE_URL + "/invoice/create",
-                HttpMethod.POST,
-                entity,
-                ClickInvoiceDto.class
-        ).getBody();
-
-        assert body != null;
-        System.out.println(body);
-        order.setInvoiceId(body.getInvoiceId().toString());
-        orderRepository.save(order);
+            assert body != null;
+            System.out.println(body);
+            order.setInvoiceId(body.getInvoiceId().toString());
+            order = orderRepository.save(order);
+            UtilLists.orderMap.put(order.getUser().getChatId(), order);
+        }catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+        }
     }
 
     @Override
