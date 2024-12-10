@@ -319,11 +319,10 @@ public class TelegramService {
             }
             case CONFIRM_ORDER_YES -> {
                 Order order = UtilLists.orderMap.get(callbackQuery.getMessage().getChatId());
-                order = orderRepository.save(order);
-                UtilLists.orderMap.put(callbackQuery.getMessage().getChatId(), order);
+                System.out.println(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()));
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
-                        paymentServiceClickImpl.sendInvoice(order.getId(), order.getPhoneNumber());
+                        paymentServiceClickImpl.sendInvoice(order);
                         BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
                     }
                 } else {
@@ -359,6 +358,7 @@ public class TelegramService {
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 } else
                     BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
+                }
             }
             case DELETE_PRODUCT -> {
                 productService.delete(UtilLists.productUpdate.get(telegramUser.getChatId()).getId());
