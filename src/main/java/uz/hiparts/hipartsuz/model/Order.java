@@ -12,6 +12,7 @@ import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -46,7 +47,7 @@ public class Order {
     private boolean active;
     private String invoiceId;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductQuantity> productQuantities;
+    private List<ProductQuantity> productQuantities = new ArrayList<>();
     private boolean isPaid;
     private boolean isCancelled;
 

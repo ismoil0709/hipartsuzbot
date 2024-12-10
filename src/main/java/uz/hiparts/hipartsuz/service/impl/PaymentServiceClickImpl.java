@@ -198,31 +198,26 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         return response;
     }
 
-    @Transactional
     public void sendInvoice(Order order) {
-        try {
-            order = orderRepository.save(order);
-            HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                    getServiceId(),
-                    order.getTotalPrice().floatValue(),
-                    order.getPhoneNumber(),
-                    order.getId().toString()
-            ), headers);
-            ClickInvoiceDto body = restTemplate.exchange(
-                    CLICK_INVOICE_URL + "/invoice/create",
-                    HttpMethod.POST,
-                    entity,
-                    ClickInvoiceDto.class
-            ).getBody();
+        order = orderRepository.save(order);
+        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
+                getServiceId(),
+                order.getTotalPrice().floatValue(),
+                order.getPhoneNumber(),
+                order.getId().toString()
+        ), headers);
+        ClickInvoiceDto body = restTemplate.exchange(
+                CLICK_INVOICE_URL + "/invoice/create",
+                HttpMethod.POST,
+                entity,
+                ClickInvoiceDto.class
+        ).getBody();
 
-            assert body != null;
-            System.out.println(body);
-            order.setInvoiceId(body.getInvoiceId().toString());
-            order = orderRepository.save(order);
-            UtilLists.orderMap.put(order.getUser().getChatId(), order);
-        }catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
-        }
+        assert body != null;
+        System.out.println(body);
+        order.setInvoiceId(body.getInvoiceId().toString());
+        order = orderRepository.save(order);
+        UtilLists.orderMap.put(order.getUser().getChatId(), order);
     }
 
     @Override

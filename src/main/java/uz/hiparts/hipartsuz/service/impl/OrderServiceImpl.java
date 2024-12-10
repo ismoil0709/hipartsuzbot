@@ -20,6 +20,7 @@ import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
         existsOrder.setPaymentType(order.getPaymentType());
         existsOrder.setTime(order.getTime());
         existsOrder.setComment(order.getComment());
-        existsOrder.setProductQuantities(
+        existsOrder.setProductQuantities(new ArrayList<>(
                 order.getProductQuantities().stream().map(productQuantitiesDto ->
                         ProductQuantity.builder()
                         .product(productRepository.findById(productQuantitiesDto.getProductId()).orElseThrow(
@@ -47,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
                         ))
                         .quantity(productQuantitiesDto.getQuantity())
                         .build()).toList()
-        );
+        ));
         existsOrder.setTotalPrice(order.getTotalPrice());
         existsOrder.setActive(true);
         existsOrder.setUser(userRepository.findByChatId(order.getUserId()).orElseThrow(
