@@ -25,4 +25,5 @@ public class Category {
     private Long id;
     @NotBlank
     private String name;
+    private boolean isActive;
 }
