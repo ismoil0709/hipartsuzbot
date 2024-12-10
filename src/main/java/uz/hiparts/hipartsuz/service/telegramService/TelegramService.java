@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import uz.hiparts.hipartsuz.dto.AddressDto;
-import uz.hiparts.hipartsuz.dto.ClickDto;
 import uz.hiparts.hipartsuz.dto.ProductCreateUpdateDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
@@ -36,7 +35,6 @@ import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
 import uz.hiparts.hipartsuz.service.impl.ExportXLSXFile;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
-import uz.hiparts.hipartsuz.service.impl.ProductServiceImpl;
 import uz.hiparts.hipartsuz.util.BotUtils;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
@@ -325,7 +323,6 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 }
-                else BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
             }
             case DELETE_PRODUCT -> {
                 productService.delete(UtilLists.productUpdate.get(telegramUser.getChatId()).getId());

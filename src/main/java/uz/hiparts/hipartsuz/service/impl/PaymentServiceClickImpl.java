@@ -226,7 +226,6 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
     @Override
     public boolean checkInvoice(String invoiceId) {
-        HttpEntity<ClickInvoiceStatusDto> entity = new HttpEntity<>(headers);
 
         Optional<Order> optionalOrder = orderRepository.findByInvoiceId(invoiceId);
         if (optionalOrder.isEmpty()) {
@@ -235,17 +234,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
         Order order = optionalOrder.get();
 
-        ClickInvoiceStatusDto body = restTemplate.exchange(
-                CLICK_INVOICE_URL + "/invoice/status/" + getServiceId() + "/" + order.getInvoiceId(),
-                HttpMethod.GET,
-                entity,
-                ClickInvoiceStatusDto.class
-        ).getBody();
-
-        assert body != null;
-
-        System.out.println(body);
-        return body.getInvoiceStatus() != null && body.getInvoiceStatus() == 0 && order.isPaid();
+        return order.isPaid();
     }
 
 
