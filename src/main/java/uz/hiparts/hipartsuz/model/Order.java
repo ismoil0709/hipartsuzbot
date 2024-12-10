@@ -45,7 +45,7 @@ public class Order {
     private String comment;
     private boolean active;
     private String invoiceId;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductQuantity> productQuantities;
     private boolean isPaid;
     private boolean isCancelled;
