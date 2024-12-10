@@ -200,7 +200,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
                 () -> new NotFoundException("Order")
         );
         HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                36335,
+                getServiceId(),
                 order.getTotalPrice().floatValue(),
                 phoneNumber,
                 orderId.toString()
@@ -244,7 +244,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
 
     public Integer getServiceId() {
-        return 28003;
+        return 36335;
     }
 
     public String getSecretKey() {
