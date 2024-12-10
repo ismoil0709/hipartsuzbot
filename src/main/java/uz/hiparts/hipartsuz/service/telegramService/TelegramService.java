@@ -129,6 +129,15 @@ public class TelegramService {
             BotUtils.send(sendMessageService.sendCatalog(telegramUser));
             return;
         }
+        if (data.startsWith(Callback.BRANCH_DELETE.getCallback())) {
+            Long branchId = Long.parseLong(data.split("-")[1]);
+            branchService.deleteById(branchId);
+            BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+            BotUtils.send(sendMessageService.successfully(telegramUser));
+            telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
+            return;
+        }
         if (data.startsWith(Callback.CATEGORY.getCallback())) {
             Long categoryId = Long.parseLong(data.split("-")[1]);
             Category category = categoryService.getById(categoryId);
@@ -140,6 +149,15 @@ public class TelegramService {
             BotUtils.send(sendMessageService.successfully(telegramUser));
             BotUtils.send(sendMessageService.adminPanel(telegramUser));
             telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            return;
+        }
+        if (data.startsWith(Callback.CATEGORY_DELETE.getCallback())) {
+            Long branchId = Long.parseLong(data.split("-")[1]);
+            categoryService.deleteById(branchId);
+            BotUtils.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
+            BotUtils.send(sendMessageService.successfully(telegramUser));
+            telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+            BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
             return;
         }
         if (data.startsWith(Callback.CHANGED_CATEGORY.getCallback())) {
@@ -312,6 +330,22 @@ public class TelegramService {
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 }
             }
+            case ADD_BRANCH -> {
+                BotUtils.send(sendMessageService.addBranch(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_BRANCH_NAME);
+            }
+            case DELETE_BRANCH -> {
+                BotUtils.send(sendMessageService.deleteBranch(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_BRANCH_FOR_DELETE);
+            }
+            case ADD_CATEGORY -> {
+                BotUtils.send(sendMessageService.inputCategoryName(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_CATEGORY_NAME);
+            }
+            case DELETE_CATEGORY -> {
+                BotUtils.send(sendMessageService.deleteCategory(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_CATEGORY_FOR_DELETE);
+            }
             case BOT_SETTINGS -> {
                 BotUtils.send(sendMessageService.botSettings(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
@@ -319,9 +353,11 @@ public class TelegramService {
             case PAYED -> {
                 boolean isPaid = paymentServiceClickImpl.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getInvoiceId());
 
-                if (isPaid){
+                if (isPaid) {
                     BotUtils.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                } else
+                    BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
                 }
             }
             case DELETE_PRODUCT -> {
@@ -332,7 +368,7 @@ public class TelegramService {
             }
             case EXPORT_PRODUCTS -> {
                 try {
-                 BotUtils.sendFile(callbackQuery.getMessage().getChatId(),exportXLSXFile.exportXLSXFile());
+                    BotUtils.sendFile(callbackQuery.getMessage().getChatId(), exportXLSXFile.exportXLSXFile());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -556,6 +592,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.changeProduct(telegramUser));
                 }
             }
+
             case INPUT_NEW_PRODUCT_PRICE -> {
                 if (message.hasText()) {
                     String productPrice = message.getText();
@@ -619,7 +656,6 @@ public class TelegramService {
                 }
             }
 
-
             case INPUT_ADMIN_USERNAME_FOR_SET -> {
                 if (message.hasText()) {
                     String username = message.getText();
@@ -629,6 +665,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
+
             case INPUT_ADMIN_PHONE_NUMBER_FOR_SET -> {
                 if (message.hasText()) {
                     String phoneNumber = message.getText();
@@ -638,6 +675,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
+
             case INPUT_ADMIN_USERNAME_FOR_REMOVE -> {
                 if (message.hasText()) {
                     String username = message.getText();
@@ -647,6 +685,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
+
             case INPUT_ADMIN_PHONE_NUMBER_FOR_REMOVE -> {
                 if (message.hasText()) {
                     String phoneNumber = message.getText();
@@ -656,6 +695,7 @@ public class TelegramService {
                     BotUtils.send(sendMessageService.welcomeAdmin(telegramUser));
                 }
             }
+
             case INPUT_CURRENCY -> {
                 if (message.hasText()) {
                     try {
@@ -671,6 +711,44 @@ public class TelegramService {
                         BotUtils.send(sendMessageService.adminPanel(telegramUser));
                     } catch (NumberFormatException ignore) {
                     }
+                }
+            }
+
+            case INPUT_BRANCH_NAME -> {
+                if (message.hasText()) {
+                    String branchName = message.getText();
+                    UtilLists.branchCreate.put(message.getChatId(), Branch.builder().name(branchName).build());
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.INPUT_BRANCH_LOCATION);
+                    BotUtils.send(sendMessageService.askBranchLocation(telegramUser));
+                }
+            }
+
+            case INPUT_BRANCH_LOCATION -> {
+                if (message.hasLocation()) {
+                    Location location = message.getLocation();
+                    AddressDto addressDetails = new RestTemplate().getForObject("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + location.getLatitude() + "&lon=" + location.getLongitude() + "&zoom=155&addressdetails=1", AddressDto.class);
+                    if (addressDetails != null) {
+                        Branch branch = UtilLists.branchCreate.get(message.getChatId());
+                        branch.setLat(location.getLatitude());
+                        branch.setLon(location.getLongitude());
+                        branch.setAddress(addressDetails.getDisplayName());
+                        branchService.create(branch);
+                        UtilLists.branchCreate.put(message.getChatId(), null);
+                        BotUtils.send(sendMessageService.successfully(telegramUser));
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                        BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                        BotUtils.send(sendMessageService.sendLocation(telegramUser, branch.getAddress()));
+                    }
+                } else BotUtils.send(sendMessageService.invalidBranchAddress(telegramUser));
+            }
+
+            case INPUT_CATEGORY_NAME -> {
+                if (message.hasText()) {
+                    String categoryName = message.getText();
+                    categoryService.save(categoryName);
+                    BotUtils.send(sendMessageService.successfully(telegramUser));
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    BotUtils.send(sendMessageService.adminPanel(telegramUser));
                 }
             }
         }

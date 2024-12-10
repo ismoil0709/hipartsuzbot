@@ -11,5 +11,5 @@ public interface CategoryService {
     Category getById(Long id);
     Category getByName(String name);
     List<Category> getAll();
-
+    void deleteById(Long id);
 }
