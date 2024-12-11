@@ -45,6 +45,8 @@ public enum Callback {
     REMOVE_BY_USERNAME("admin-username-remove"),
     REMOVE_BY_PHONE_NUMBER("admin-phone-number-remove"),
     CHANGE_CURRENCY("change-currency"),
+    CHANGE_DELIVERY_PRICE("change-delivery-price"),
+    CHANGE_OPERATOR_NUMBER("change-operator-number"),
     DELETE_PRODUCT("delete-product"),
     ADD_BRANCH("add-branch"),
     DELETE_BRANCH("delete-branch"),

@@ -193,7 +193,7 @@ public class SendMessageService {
                         KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_LOCATION, telegramUser.getChatId()), false, true),
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
-                                false,false
+                                false, false
                         )
                 ))
                 .build();
@@ -447,6 +447,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.ADMIN_PANEL, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_CURRENCY, telegramUser.getChatId()), Callback.CHANGE_CURRENCY.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_DELIVERY_PRICE, telegramUser.getChatId()), Callback.CHANGE_DELIVERY_PRICE.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_OPERATOR_NUMBER, telegramUser.getChatId()), Callback.CHANGE_OPERATOR_NUMBER.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
                 ))
                 .build();
@@ -737,6 +739,32 @@ public class SendMessageService {
     public EditMessageText writeCurrency(TelegramUser telegramUser, Integer messageId) {
         String message = langService.getMessage(LangFields.INPUT_CURRENCY, telegramUser.getChatId());
         message = message.replaceAll("\\?", botSettingsService.getCurrency());
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(message)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
+                ))
+                .build();
+    }
+
+    public EditMessageText writeDeliveryPrice(TelegramUser telegramUser, Integer messageId) {
+        String message = langService.getMessage(LangFields.INPUT_DELIVERY_PRICE, telegramUser.getChatId());
+        message = message.replaceAll("\\?", botSettingsService.getDeliveryPrice());
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(message)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
+                ))
+                .build();
+    }
+
+    public EditMessageText writeOperatorNumber(TelegramUser telegramUser, Integer messageId) {
+        String message = langService.getMessage(LangFields.INPUT_OPERATOR_NUMBER, telegramUser.getChatId());
+        message = message.replaceAll("\\?", botSettingsService.getOperatorNumber());
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)

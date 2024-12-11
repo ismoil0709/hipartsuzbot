@@ -288,6 +288,14 @@ public class TelegramService {
                 BotUtils.send(sendMessageService.writeCurrency(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.INPUT_CURRENCY);
             }
+            case CHANGE_DELIVERY_PRICE -> {
+                BotUtils.send(sendMessageService.writeDeliveryPrice(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.INPUT_DELIVERY_PRICE);
+            }
+            case CHANGE_OPERATOR_NUMBER -> {
+                BotUtils.send(sendMessageService.writeOperatorNumber(telegramUser, callbackQuery.getMessage().getMessageId()));
+                telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.INPUT_OPERATOR_NUMBER);
+            }
             case REMOVE_ADMIN -> {
                 BotUtils.send(sendMessageService.removeAdminMethod(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.CHOOSE_METHOD_REMOVE_ADMIN);
@@ -358,7 +366,6 @@ public class TelegramService {
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 } else
                     BotUtils.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
-                }
             }
             case DELETE_PRODUCT -> {
                 productService.delete(UtilLists.productUpdate.get(telegramUser.getChatId()).getId());
@@ -698,19 +705,44 @@ public class TelegramService {
 
             case INPUT_CURRENCY -> {
                 if (message.hasText()) {
-                    try {
-                        String existingCurrency = botSettingsService.getCurrency();
-                        String currency = message.getText();
-                        List<Product> all = productRepository.findAll();
-                        all.forEach(
-                                p -> p.setPrice((p.getPrice() / Double.parseDouble(existingCurrency)) * Double.parseDouble(currency))
-                        );
-                        productRepository.saveAll(all);
-                        botSettingsService.setCurrency(currency);
+                    String rate = message.getText();
+                    if (rate.matches(Regex.PRICE)) {
+                        try {
+                            String existingRate = botSettingsService.getCurrency();
+                            List<Product> all = productRepository.findAll();
+                            all.forEach(
+                                    p -> p.setPrice((p.getPrice() / Double.parseDouble(existingRate)) * Double.parseDouble(rate))
+                            );
+                            productRepository.saveAll(all);
+                            botSettingsService.setCurrency(rate);
+                            BotUtils.send(sendMessageService.successfully(telegramUser));
+                            BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                        } catch (NumberFormatException ignore) {
+                        }
+                    } else
+                        BotUtils.send(sendMessageService.invalidPrice(telegramUser));
+                }
+            }
+            case INPUT_DELIVERY_PRICE -> {
+                if (message.hasText()) {
+                    String deliveryPrice = message.getText();
+                    if (deliveryPrice.matches(Regex.PRICE)) {
+                        botSettingsService.setDeliveryPrice(deliveryPrice);
                         BotUtils.send(sendMessageService.successfully(telegramUser));
                         BotUtils.send(sendMessageService.adminPanel(telegramUser));
-                    } catch (NumberFormatException ignore) {
-                    }
+                    } else
+                        BotUtils.send(sendMessageService.invalidPrice(telegramUser));
+                }
+            }
+            case INPUT_OPERATOR_NUMBER -> {
+                if (message.hasText()) {
+                    String operatorNumber = message.getText();
+                    if (operatorNumber.matches(Regex.PHONE_NUMBER)) {
+                        botSettingsService.setOperatorNumber(operatorNumber);
+                        BotUtils.send(sendMessageService.successfully(telegramUser));
+                        BotUtils.send(sendMessageService.adminPanel(telegramUser));
+                    } else
+                        BotUtils.send(sendMessageService.invalidNumberFormat(telegramUser));
                 }
             }
 
