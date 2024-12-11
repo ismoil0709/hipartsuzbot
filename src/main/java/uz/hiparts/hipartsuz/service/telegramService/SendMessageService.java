@@ -17,9 +17,12 @@ import uz.hiparts.hipartsuz.model.Branch;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
-import uz.hiparts.hipartsuz.model.enums.*;
+import uz.hiparts.hipartsuz.model.enums.Callback;
+import uz.hiparts.hipartsuz.model.enums.LangFields;
+import uz.hiparts.hipartsuz.model.enums.OrderType;
+import uz.hiparts.hipartsuz.model.enums.Role;
+import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
-import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.LangService;
 import uz.hiparts.hipartsuz.service.ProductService;
@@ -39,7 +42,6 @@ public class SendMessageService {
     private final TelegramUserService telegramUserService;
     private final UserService userService;
     private final ProductService productService;
-    private final OrderRepository orderRepository;
     private final BotSettingsService botSettingsService;
     private User user;
     private final CategoryRepository categoryRepository;
@@ -93,12 +95,13 @@ public class SendMessageService {
                         ),
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
-                                false,false
+                                false, false
                         )
                 ))
                 .chatId(telegramUser.getChatId())
                 .build();
     }
+
     public SendMessage welcomeUser(TelegramUser telegramUser) {
         telegramUser.setState(UserState.INPUT_PHONE_NUMBER);
         return SendMessage.builder()
@@ -116,6 +119,7 @@ public class SendMessageService {
                 .chatId(telegramUser.getChatId())
                 .build();
     }
+
     public SendMessage setLang(String data, TelegramUser telegramUser) {
         String lang = data.split("-")[1];
         if (lang.equals("ru"))
@@ -186,7 +190,7 @@ public class SendMessageService {
                         KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_LOCATION, telegramUser.getChatId()), false, true),
                         KeyboardUtils.button(
                                 langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
-                                false,false
+                                false, false
                         )
                 ))
                 .build();
@@ -270,7 +274,7 @@ public class SendMessageService {
                                 KeyboardUtils.button(langService.getMessage(LangFields.BUTTON_RESEND_CODE, telegramUser.getChatId()), false, false),
                                 KeyboardUtils.button(
                                         langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
-                                        false,false
+                                        false, false
                                 )
                         )
                 )
@@ -343,7 +347,7 @@ public class SendMessageService {
                         ))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
-                .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCTS, chatId),Callback.EXPORT_PRODUCTS.getCallback())))
+                .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCTS, chatId), Callback.EXPORT_PRODUCTS.getCallback())))
                 .build();
 
         return SendMessage.builder()
@@ -361,6 +365,8 @@ public class SendMessageService {
                 .text(langService.getMessage(LangFields.ADMIN_PANEL, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_CURRENCY, telegramUser.getChatId()), Callback.CHANGE_CURRENCY.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_DELIVERY_PRICE, telegramUser.getChatId()), Callback.CHANGE_DELIVERY_PRICE.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_OPERATOR_NUMBER, telegramUser.getChatId()), Callback.CHANGE_OPERATOR_NUMBER.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
                 ))
                 .build();
@@ -634,7 +640,7 @@ public class SendMessageService {
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_USERNAME, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
@@ -644,13 +650,39 @@ public class SendMessageService {
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.INPUT_ADMIN_PHONE_NUMBER, telegramUser.getChatId()))
                 .replyMarkup(KeyboardUtils.inlineMarkup(
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()), Callback.ADD_ADMIN.getCallback())))
                 .build();
     }
 
     public EditMessageText writeCurrency(TelegramUser telegramUser, Integer messageId) {
         String message = langService.getMessage(LangFields.INPUT_CURRENCY, telegramUser.getChatId());
         message = message.replaceAll("\\?", botSettingsService.getCurrency());
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(message)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
+                ))
+                .build();
+    }
+
+    public EditMessageText writeDeliveryPrice(TelegramUser telegramUser, Integer messageId) {
+        String message = langService.getMessage(LangFields.INPUT_DELIVERY_PRICE, telegramUser.getChatId());
+        message = message.replaceAll("\\?", botSettingsService.getDeliveryPrice());
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(message)
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()), Callback.BACK_TO_ADMIN_PANEL.getCallback())
+                ))
+                .build();
+    }
+
+    public EditMessageText writeOperatorNumber(TelegramUser telegramUser, Integer messageId) {
+        String message = langService.getMessage(LangFields.INPUT_OPERATOR_NUMBER, telegramUser.getChatId());
+        message = message.replaceAll("\\?", botSettingsService.getOperatorNumber());
         return EditMessageText.builder()
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
@@ -709,15 +741,16 @@ public class SendMessageService {
         return SendPhoto.builder()
                 .chatId(chatId)
                 .photo(new InputFile(imgId))
-                .caption(langService.getMessage(LangFields.INPUT_NEW_PRODUCT_IMAGE,chatId))
+                .caption(langService.getMessage(LangFields.INPUT_NEW_PRODUCT_IMAGE, chatId))
                 .build();
     }
-    public EditMessageText sendPaymentMessage(Long chatId,Integer messageId){
+
+    public EditMessageText sendPaymentMessage(Long chatId, Integer messageId) {
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
-                .text(langService.getMessage(LangFields.PAYMENT_MESSAGE,chatId))
-                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton("To'landi !",Callback.PAYED.getCallback())))
+                .text(langService.getMessage(LangFields.PAYMENT_MESSAGE, chatId))
+                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton("To'landi !", Callback.PAYED.getCallback())))
                 .build();
     }
 }
