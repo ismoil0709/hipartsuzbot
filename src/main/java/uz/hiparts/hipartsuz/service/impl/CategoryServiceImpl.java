@@ -18,13 +18,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category save(String name) {
-        if (categoryRepository.findByName(name).isPresent()) {
+        if (categoryRepository.findByName(name).isPresent())
             throw new AlreadyExistsException("Category");
-        }
-        return categoryRepository.save(Category
-                .builder()
-                .name(name)
-                .build());
+        return categoryRepository.save(Category.builder().name(name).isActive(true).build());
     }
 
     @Override
@@ -48,5 +44,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<Category> getAll() {
         return categoryRepository.findAll();
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Category"));
+        category.setActive(false);
+        categoryRepository.save(category);
     }
 }

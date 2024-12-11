@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.model.Branch;
+import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
@@ -22,6 +23,7 @@ import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.repository.BranchRepository;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.LangService;
@@ -43,6 +45,7 @@ public class SendMessageService {
     private final UserService userService;
     private final ProductService productService;
     private final BotSettingsService botSettingsService;
+    private final BranchRepository branchRepository;
     private User user;
     private final CategoryRepository categoryRepository;
 
@@ -196,6 +199,18 @@ public class SendMessageService {
                 .build();
     }
 
+    public SendMessage askBranchLocation(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INPUT_BRANCH_ADDRESS, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.markup(
+                        KeyboardUtils.button(
+                                langService.getMessage(LangFields.BUTTON_LOCATION, telegramUser.getChatId()),
+                                false, true)
+                ))
+                .build();
+    }
+
     public EditMessageText sendBranches(List<Branch> branches, Integer messageId, TelegramUser telegramUser) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         for (Branch branch : branches) {
@@ -237,6 +252,13 @@ public class SendMessageService {
     }
 
     public SendMessage invalidShippingAddress(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))
+                .chatId(telegramUser.getChatId())
+                .build();
+    }
+
+    public SendMessage invalidBranchAddress(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .text(langService.getMessage(LangFields.INVALID_SHIPPING_ADDRESS, telegramUser.getChatId()))
                 .chatId(telegramUser.getChatId())
@@ -340,11 +362,15 @@ public class SendMessageService {
                 .keyboardRow(List.of(
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_PRODUCT, chatId), Callback.ADD_PRODUCT.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_CHANGE_PRODUCT, chatId), Callback.CHANGE_PRODUCT.getCallback())))
-                .keyboardRow(
-                        List.of(
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_ADMIN, chatId), Callback.ADD_ADMIN.getCallback()),
-                                KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_REMOVE_ADMIN, chatId), Callback.REMOVE_ADMIN.getCallback())
-                        ))
+                .keyboardRow(List.of(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_ADMIN, chatId), Callback.ADD_ADMIN.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_REMOVE_ADMIN, chatId), Callback.REMOVE_ADMIN.getCallback())))
+                .keyboardRow(List.of(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_BRANCH, chatId), Callback.ADD_BRANCH.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_DELETE_BRANCH, chatId), Callback.DELETE_BRANCH.getCallback())))
+                .keyboardRow(List.of(
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_CATEGORY, chatId), Callback.ADD_CATEGORY.getCallback()),
+                        KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_DELETE_CATEGORY, chatId), Callback.DELETE_CATEGORY.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCTS, chatId), Callback.EXPORT_PRODUCTS.getCallback())))
@@ -356,6 +382,62 @@ public class SendMessageService {
                 .replyMarkup(markup)
                 .build();
 
+    }
+
+    public EditMessageText addBranch(TelegramUser telegramUser, Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_BRANCH_NAME, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
+                .build();
+    }
+
+    public EditMessageText deleteBranch(TelegramUser telegramUser, Integer messageId) {
+        List<InlineKeyboardButton> buttons = branchRepository.findAll().stream()
+                .filter(Branch::isActive)
+                .map(b -> KeyboardUtils.inlineButton(b.getName(), Callback.BRANCH_DELETE.getCallback() + b.getId()))
+                .collect(Collectors.toList());
+        buttons.add(KeyboardUtils.inlineButton(
+                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                Callback.BACK_TO_ADMIN_PANEL.getCallback()));
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.CHOOSE_BRANCH_FOR_DELETE, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
+                .build();
+    }
+
+    public EditMessageText deleteCategory(TelegramUser telegramUser, Integer messageId) {
+        List<InlineKeyboardButton> buttons = categoryRepository.findAll().stream()
+                .filter(Category::isActive)
+                .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY_DELETE.getCallback() + c.getId()))
+                .collect(Collectors.toList());
+        buttons.add(KeyboardUtils.inlineButton(
+                langService.getMessage(LangFields.BUTTON_CANCEL, telegramUser.getChatId()),
+                Callback.BACK_TO_ADMIN_PANEL.getCallback()));
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.CHOOSE_CATEGORY_FOR_DELETE, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(buttons))
+                .build();
+    }
+
+    public EditMessageText inputCategoryName(TelegramUser telegramUser, Integer messageId) {
+        return EditMessageText.builder()
+                .chatId(telegramUser.getChatId())
+                .messageId(messageId)
+                .text(langService.getMessage(LangFields.INPUT_CATEGORY_NAME, telegramUser.getChatId()))
+                .replyMarkup(KeyboardUtils.inlineMarkup(
+                        KeyboardUtils.inlineButton(
+                                langService.getMessage(LangFields.BUTTON_BACK, telegramUser.getChatId()),
+                                Callback.BACK_TO_ADMIN_PANEL.getCallback())))
+                .build();
     }
 
     public EditMessageText botSettings(TelegramUser telegramUser, Integer messageId) {

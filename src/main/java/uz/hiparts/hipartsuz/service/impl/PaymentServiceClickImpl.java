@@ -9,15 +9,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import uz.hiparts.hipartsuz.dto.ClickDto;
+import uz.hiparts.hipartsuz.dto.ClickInvoiceStatusDto;
 import uz.hiparts.hipartsuz.dto.ClickSendInvoiceDto;
-import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.ClickPayment;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.repository.ClickPaymentRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.service.PaymentService;
+import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.security.MessageDigest;
 import java.util.List;
@@ -195,15 +198,13 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         return response;
     }
 
-    public void sendInvoice(Long orderId, String phoneNumber) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
-                () -> new NotFoundException("Order")
-        );
+    public void sendInvoice(Order order) {
+        order = orderRepository.save(order);
         HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                36335,
+                getServiceId(),
                 order.getTotalPrice().floatValue(),
-                phoneNumber,
-                orderId.toString()
+                order.getPhoneNumber(),
+                order.getId().toString()
         ), headers);
         ClickInvoiceDto body = restTemplate.exchange(
                 CLICK_INVOICE_URL + "/invoice/create",
@@ -215,12 +216,12 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         assert body != null;
         System.out.println(body);
         order.setInvoiceId(body.getInvoiceId().toString());
-        orderRepository.save(order);
+        order = orderRepository.save(order);
+        UtilLists.orderMap.put(order.getUser().getChatId(), order);
     }
 
     @Override
     public boolean checkInvoice(String invoiceId) {
-        HttpEntity<ClickInvoiceDto> entity = new HttpEntity<>(headers);
 
         Optional<Order> optionalOrder = orderRepository.findByInvoiceId(invoiceId);
         if (optionalOrder.isEmpty()) {
@@ -229,22 +230,12 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
         Order order = optionalOrder.get();
 
-        ClickInvoiceDto body = restTemplate.exchange(
-                CLICK_INVOICE_URL + "/invoice/status/" + getServiceId() + "/" + order.getInvoiceId(),
-                HttpMethod.GET,
-                entity,
-                ClickInvoiceDto.class
-        ).getBody();
-
-        assert body != null;
-
-        System.out.println(body);
-        return body.getInvoiceStatus() == 0 && order.isPaid();
+        return order.isPaid();
     }
 
 
     public Integer getServiceId() {
-        return 28003;
+        return 36335;
     }
 
     public String getSecretKey() {
@@ -288,10 +279,6 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         private Long paymentId;
         @JsonProperty("payment_status")
         private Integer paymentStatus;
-        @JsonProperty("invoice_status")
-        private Integer invoiceStatus;
-        @JsonProperty("invoice_status_note")
-        private String invoiceStatusNote;
     }
 
 }

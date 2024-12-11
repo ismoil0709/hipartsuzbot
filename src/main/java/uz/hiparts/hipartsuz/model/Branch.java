@@ -25,4 +25,6 @@ public class Branch {
     private String name;
     private Double lon;
     private Double lat;
+    private String address;
+    private boolean isActive;
 }
