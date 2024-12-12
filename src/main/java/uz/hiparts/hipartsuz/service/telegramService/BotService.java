@@ -1,17 +1,17 @@
-package uz.hiparts.hipartsuz.util;
+package uz.hiparts.hipartsuz.service.telegramService;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.ToString;
-import lombok.experimental.UtilityClass;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -24,36 +24,37 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileAttribute;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@UtilityClass
-public class BotUtils {
+@Service
+public class BotService {
+
     private static final String BASE_URL = "https://api.telegram.org/bot";
     private static final String FILE_URL = "https://api.telegram.org/file/bot";
-    private static final String BOT_TOKEN = "6412338008:AAFcXM2MXc2mCSUb3Rv3U1fP_JRY9GA77_A/";
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    public static <T extends Serializable, Method extends BotApiMethod<T>> void send(Method method) {
-        restTemplate.postForObject(BASE_URL + BOT_TOKEN + method.getMethod(), method, TelegramResultDto.class);
+    @Value("${telegram.token}")
+    private String token;
+
+    public <T extends Serializable, Method extends BotApiMethod<T>> void send(Method method) {
+        restTemplate.postForObject(BASE_URL + token + "/" + method.getMethod(), method, TelegramResultDto.class);
     }
 
-    public static void send(SendPhoto method) {
+    public void send(SendPhoto method) {
         Map<String, String> map = new HashMap<>();
         map.put("chat_id", method.getChatId());
         map.put("photo", method.getFile().getAttachName());
         map.put("caption", method.getCaption());
         HttpEntity<?> requestEntity = new HttpEntity<>(map);
-        restTemplate.exchange(BASE_URL + BOT_TOKEN + method.getMethod(), HttpMethod.POST, requestEntity, Void.class);
+        restTemplate.exchange(BASE_URL + token + "/" + method.getMethod(), HttpMethod.POST, requestEntity, Void.class);
     }
 
-    public static void sendFile(Long chatId, String filePath) {
+    public void sendFile(Long chatId, String filePath) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = BASE_URL + BOT_TOKEN + "/sendDocument";
+        String url = BASE_URL + token + "/sendDocument";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -67,8 +68,7 @@ public class BotUtils {
         System.out.println("File uploaded successfully!");
     }
 
-
-    public static String getFile(String fileId) {
+    public String getFile(String fileId) {
         String fileUrl = "";
         String directoryPath = "/home/user/product_photo";
         Path directory = Path.of(directoryPath);
@@ -78,14 +78,14 @@ public class BotUtils {
             if (!Files.exists(directory)) {
                 Files.createDirectories(directory);
             }
-            FileResponse response = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "getFile?file_id=" + fileId, FileResponse.class);
+            BotService.FileResponse response = restTemplate.getForObject(BASE_URL + token + "getFile?file_id=" + fileId, BotService.FileResponse.class);
 
             if (response != null && response.isOk()) {
                 String originalFilePath = response.getResult().getFilePath();
                 String fileExtension = originalFilePath.substring(originalFilePath.lastIndexOf('.'));
                 fileName = UUID.randomUUID() + fileExtension;
 
-                fileUrl = FILE_URL + BOT_TOKEN + originalFilePath;
+                fileUrl = FILE_URL + token + originalFilePath;
                 byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
 
                 if (fileBytes != null) {
@@ -107,13 +107,22 @@ public class BotUtils {
         return fileUrl;
     }
 
+    public String getWebhookUrl() {
+        BotService.WebHookResult resultDto = restTemplate.getForObject(BASE_URL + token + "/getWebhookInfo", BotService.WebHookResult.class);
+        System.out.println(resultDto);
+        if (resultDto != null) {
+            if (resultDto.getResult().getUrl() != null) {
+                return resultDto.getResult().getUrl();
+            }
+        }
+        return "";
+    }
 
     @Setter
     @Getter
     private static class FileResponse {
         private boolean ok;
         private File result;
-
     }
 
     @Getter
@@ -126,21 +135,11 @@ public class BotUtils {
         private String filePath;
     }
 
-    public static String getWebhookUrl() {
-        WebHookResult resultDto = restTemplate.getForObject(BASE_URL + BOT_TOKEN + "/getWebhookInfo", WebHookResult.class);
-        System.out.println(resultDto);
-        if (resultDto != null) {
-            if (resultDto.getResult().getUrl() != null) {
-                return resultDto.getResult().getUrl();
-            }
-        }
-        return "";
-    }
-
     @AllArgsConstructor
     @Getter
     private static class WebHookResult {
         private boolean ok;
         private WebhookInfo result;
     }
+
 }

@@ -14,6 +14,5 @@ public class UtilLists {
     public static Map<Long, Order> orderMap = new HashMap<>();
     public static Map<Long, ProductCreateUpdateDto> productCreate = new HashMap<>();
     public static Map<Long, Branch> branchCreate = new HashMap<>();
-
     public static Map<Long, ProductDto> productUpdate = new HashMap<>();
 }

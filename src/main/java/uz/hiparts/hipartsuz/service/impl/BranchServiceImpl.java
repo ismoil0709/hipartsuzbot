@@ -12,6 +12,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BranchServiceImpl implements BranchService {
+
     private final BranchRepository branchRepository;
 
     @Override
@@ -21,8 +22,14 @@ public class BranchServiceImpl implements BranchService {
                 .lon(branch.getLon())
                 .lat(branch.getLat())
                 .address(branch.getAddress())
-                .isActive(true)
                 .build());
+    }
+
+    @Override
+    public void delete(Long id) {
+        Branch branch = branchRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Branch"));
+        branchRepository.deleteById(id);
     }
 
     @Override
@@ -37,11 +44,4 @@ public class BranchServiceImpl implements BranchService {
         return branchRepository.findAll();
     }
 
-    @Override
-    public void deleteById(Long id) {
-        Branch branch = branchRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Branch"));
-        branch.setActive(false);
-        branchRepository.save(branch);
-    }
 }

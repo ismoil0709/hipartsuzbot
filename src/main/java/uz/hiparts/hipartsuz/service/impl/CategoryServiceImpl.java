@@ -9,36 +9,39 @@ import uz.hiparts.hipartsuz.repository.CategoryRepository;
 import uz.hiparts.hipartsuz.service.CategoryService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
 
     @Override
     public Category save(String name) {
         if (categoryRepository.findByName(name).isPresent())
             throw new AlreadyExistsException("Category");
-        return categoryRepository.save(Category.builder().name(name).isActive(true).build());
+        return categoryRepository.save(Category.builder().name(name).build());
+    }
+
+    @Override
+    public void delete(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Category"));
+        /// todo categoryni ochirgan payt qaysidur product ga tegishli bosa categoryni ochirish mumkinmas bo'sin
+        categoryRepository.deleteById(id);
     }
 
     @Override
     public Category getById(Long id) {
-        Optional<Category> byId = categoryRepository.findById(id);
-        if (byId.isEmpty()) {
-            throw new NotFoundException("Category");
-        }
-        return byId.get();
+        return categoryRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Category")
+        );
     }
 
     @Override
     public Category getByName(String name) {
-        Optional<Category> byName = categoryRepository.findByName(name);
-        if (byName.isEmpty()) {
-            throw new NotFoundException("Category");
-        }
-        return byName.get();
+        return categoryRepository.findByName(name)
+                .orElseThrow(() -> new NotFoundException("Category"));
     }
 
     @Override
@@ -46,11 +49,4 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findAll();
     }
 
-    @Override
-    public void deleteById(Long id) {
-        Category category = categoryRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("Category"));
-        category.setActive(false);
-        categoryRepository.save(category);
-    }
 }

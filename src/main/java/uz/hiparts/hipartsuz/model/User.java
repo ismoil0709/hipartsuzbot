@@ -15,22 +15,28 @@ import lombok.Setter;
 import lombok.ToString;
 import uz.hiparts.hipartsuz.model.enums.Role;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Getter
 @Setter
-@ToString
 @Builder
-@Entity
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
     private String username;
+
     private String lastPhoneNumber;
+
     private Long chatId;
+
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 }

@@ -12,8 +12,9 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 public class LangServiceImpl implements LangService {
-    private final ResourceBundleMessageSource messageSource;
+
     private final TelegramUserService telegramUserService;
+    private final ResourceBundleMessageSource messageSource;
 
     @Override
     public String getMessage(LangFields keyword, Long chatId) {

@@ -11,13 +11,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@AllArgsConstructor
-@NoArgsConstructor
+
+@Entity
 @Getter
 @Setter
-@ToString
 @Builder
-@Entity
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class BotSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

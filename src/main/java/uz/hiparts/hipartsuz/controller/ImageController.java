@@ -17,6 +17,7 @@ import java.nio.file.Path;
 @RestController
 @RequestMapping("/api/v1/image")
 public class ImageController {
+
     @GetMapping("/get/{fileName}")
     public ResponseEntity<?> loadImage(@PathVariable String fileName) {
         String directoryPath = "/home/user/product_photo";

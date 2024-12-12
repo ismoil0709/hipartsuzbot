@@ -10,6 +10,7 @@ import uz.hiparts.hipartsuz.service.TelegramUserService;
 @Service
 @RequiredArgsConstructor
 public class TelegramUserServiceImpl implements TelegramUserService {
+
     private final TelegramUserRepository telegramUserRepository;
 
     @Override

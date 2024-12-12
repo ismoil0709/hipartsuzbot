@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.ProductCreateUpdateDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
-import uz.hiparts.hipartsuz.exception.AlreadyExistsException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.model.Product;
@@ -17,12 +16,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
+
     private final ProductRepository productRepository;
 
     @Override
     public ProductDto create(ProductCreateUpdateDto dto) {
-        if (productRepository.findByNameAndActive(dto.getName(), true).isPresent())
-            throw new AlreadyExistsException("Product");
         return new ProductDto(productRepository.save(Product.builder()
                 .isActive(true)
                 .name(dto.getName())
@@ -39,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto update(ProductCreateUpdateDto dto) {
         Product product = productRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product"));
         return new ProductDto(productRepository.save(Product
                 .builder()
                 .id(dto.getId())
@@ -56,34 +54,23 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto getById(Long id) {
-        return new ProductDto(productRepository.findByIdAndActive(id, true)
-                .orElseThrow(() -> new NotFoundException("Product")));
-    }
-
-    @Override
-    public ProductDto getByName(String name) {
-        return new ProductDto(productRepository.findByNameAndActive(name, true)
-                .orElseThrow(() -> new NotFoundException("Product")));
-    }
-
-    @Override
-    public ProductDto getByCategory(Category category) {
-        return new ProductDto(productRepository.findByCategoryAndActive(category, true)
+        return new ProductDto(productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product")));
     }
 
     @Override
     public void delete(Long id) {
-        Product product = productRepository.findByIdAndActive(id, true)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product"));
-        product.setActive(false);
-        productRepository.save(product);
+        productRepository.deleteById(id);
     }
 
     @Override
     public List<ProductDto> getAll() {
-        return productRepository.findAllByActive(true).stream().map(ProductDto::new).toList();
+        return productRepository.findAll()
+                .stream()
+                .map(ProductDto::new)
+                .toList();
     }
-
 
 }

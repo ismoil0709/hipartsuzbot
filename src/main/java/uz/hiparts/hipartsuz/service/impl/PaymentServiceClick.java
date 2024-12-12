@@ -4,22 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import uz.hiparts.hipartsuz.dto.ClickDto;
-import uz.hiparts.hipartsuz.dto.ClickInvoiceStatusDto;
 import uz.hiparts.hipartsuz.dto.ClickSendInvoiceDto;
 import uz.hiparts.hipartsuz.model.ClickPayment;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.repository.ClickPaymentRepository;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
-import uz.hiparts.hipartsuz.service.PaymentService;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
 import java.security.MessageDigest;
@@ -29,10 +26,18 @@ import java.util.Optional;
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
+public class PaymentServiceClick {
 
     private final OrderRepository orderRepository;
     private final ClickPaymentRepository clickPaymentRepository;
+
+    @Value("${secret.click.service_id}")
+    private Integer serviceId;
+    @Value("${secret.click.merchant_user_id}")
+    private String merchantUserId;
+    @Value("${secret.click.key}")
+    private String secretKey;
+
 
     private static final String CLICK_INVOICE_URL = "https://api.click.uz/v2/merchant";
     private final RestTemplate restTemplate = new RestTemplate();
@@ -40,17 +45,16 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
     {
         long unixTime = System.currentTimeMillis() / 1000L;
-        headers.set("Auth", "44167:" + encryptPasswordToSHA1(unixTime + getSecretKey()) + ":" + unixTime);
+        headers.set("Auth", merchantUserId + ":" + encryptPasswordToSHA1(unixTime + secretKey) + ":" + unixTime);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
-    @Override
     public ClickDto prepare(ClickDto dto) {
 
         String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
                 dto.getServiceId().toString() +
-                getSecretKey() +
+                secretKey +
                 dto.getMerchantTransId() +
                 Math.round(dto.getAmount()) +
                 dto.getAction().toString() +
@@ -116,12 +120,11 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
     }
 
-    @Override
     public ClickDto complete(ClickDto dto) {
 
         String signKey = DigestUtils.md5Hex(dto.getClickTransId().toString() +
                 dto.getServiceId().toString() +
-                getSecretKey() +
+                secretKey +
                 dto.getMerchantTransId() +
                 dto.getMerchantPrepareId().toString() +
                 Math.round(dto.getAmount()) +
@@ -201,7 +204,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
     public void sendInvoice(Order order) {
         order = orderRepository.save(order);
         HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                getServiceId(),
+                serviceId,
                 order.getTotalPrice().floatValue(),
                 order.getPhoneNumber(),
                 order.getId().toString()
@@ -220,7 +223,6 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         UtilLists.orderMap.put(order.getUser().getChatId(), order);
     }
 
-    @Override
     public boolean checkInvoice(String invoiceId) {
 
         Optional<Order> optionalOrder = orderRepository.findByInvoiceId(invoiceId);
@@ -231,15 +233,6 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
         Order order = optionalOrder.get();
 
         return order.isPaid();
-    }
-
-
-    public Integer getServiceId() {
-        return 36335;
-    }
-
-    public String getSecretKey() {
-        return "iCUfO2CfZkSg";
     }
 
     @SneakyThrows

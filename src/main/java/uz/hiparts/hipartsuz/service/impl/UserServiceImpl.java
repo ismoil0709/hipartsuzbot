@@ -14,21 +14,19 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
+
     @Override
     public void save(User user) {
         userRepository.save(user);
-    }
-    @Override
-    public void delete(Long id) {
-        if (userRepository.existsById(id))
-            userRepository.deleteById(id);
     }
 
     @Override
     public List<User> getAll() {
         return userRepository.findAll();
     }
+
     @Override
     public User getByChatId(Long chatId) {
         return userRepository.findByChatId(chatId).orElse(null);
@@ -41,7 +39,7 @@ public class UserServiceImpl implements UserService {
         }
         Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
         if (byPhoneNumber.isEmpty()) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("User");
         }
         User user = byPhoneNumber.get();
         if (!(user.getRole() == Role.ADMIN)){
@@ -54,7 +52,7 @@ public class UserServiceImpl implements UserService {
     public void setAdminByUsername(String username) {
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (byUsername.isEmpty()) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("User");
         }
         User user = byUsername.get();
         if (!(user.getRole() == Role.ADMIN)){
@@ -70,7 +68,7 @@ public class UserServiceImpl implements UserService {
         }
         Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
         if (byPhoneNumber.isEmpty()) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("User");
         }
         User user = byPhoneNumber.get();
         if (user.getRole() == Role.ADMIN){
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
     public void removeAdminByUsername(String username) {
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (byUsername.isEmpty()) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("User");
         }
         User user = byUsername.get();
         if (user.getRole() == Role.ADMIN){

@@ -4,15 +4,15 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.core.env.Environment;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
-import uz.hiparts.hipartsuz.util.BotUtils;
+import uz.hiparts.hipartsuz.service.telegramService.BotService;
 
 import java.io.IOException;
 
@@ -21,7 +21,11 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class ApplicationConfiguration {
-    private final Environment env;
+
+    @Value("${telegram.url}")
+    private String url;
+
+    private final BotService botService;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -46,8 +50,8 @@ public class ApplicationConfiguration {
 
     @PostConstruct
     public void init() throws IOException {
-        if (!BotUtils.getWebhookUrl().equals("https://hipartsbot.uz/api/v1/telegram"))
-            BotUtils.send(SetWebhook.builder().url("https://hipartsbot.uz/api/v1/telegram").build());
+        if (!botService.getWebhookUrl().equals(url))
+            botService.send(SetWebhook.builder().url(url).build());
     }
 
 }

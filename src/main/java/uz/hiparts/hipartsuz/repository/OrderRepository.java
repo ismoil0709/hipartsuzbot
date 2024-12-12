@@ -17,18 +17,7 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    Optional<Order> findByPhoneNumber(String phoneNumber);
     @Query("SELECT o FROM Order o WHERE o.invoiceId = ?1")
     Optional<Order> findByInvoiceId(String invoiceId);
 
-    List<Order> findByOrderType(OrderType orderType);
-    List<Order> findByUser(User user);
-    List<Order> findByBranch(String branch);
-    List<Order> findByAddress(String address);
-    List<Order> findByPaymentType(PaymentType paymentType);
-    List<Order> findByTotalPriceBetween(Double minPrice, Double maxPrice);
-    List<Order> findByTimeBetween(LocalDateTime startDate, LocalDateTime endDate);
-    List<Order> findByActive(boolean active);
-    List<Order> findByActiveAndOrderType(boolean active, OrderType orderType);
-    List<Order> findByActiveAndPaymentType(boolean active, PaymentType paymentType);
 }

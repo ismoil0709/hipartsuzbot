@@ -10,15 +10,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.SQLRestriction;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Getter
 @Setter
-@ToString
 @Builder
-@Entity
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Branch {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,5 +28,5 @@ public class Branch {
     private Double lon;
     private Double lat;
     private String address;
-    private boolean isActive;
+
 }

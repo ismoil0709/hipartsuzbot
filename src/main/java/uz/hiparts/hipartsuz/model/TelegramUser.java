@@ -12,17 +12,20 @@ import lombok.Setter;
 import lombok.ToString;
 import uz.hiparts.hipartsuz.model.enums.UserState;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Getter
 @Setter
-@ToString
 @Builder
-@Entity
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class TelegramUser {
+
     @Id
     private Long chatId;
+
     @Enumerated(EnumType.STRING)
     private UserState state;
+
     private String lang;
 }

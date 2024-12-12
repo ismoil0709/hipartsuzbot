@@ -15,40 +15,55 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Getter
 @Setter
-@ToString
 @Builder
-@Entity
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "orders")
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotNull
+
     @ManyToOne
     private User user;
-    @NotNull
+
     private OrderType orderType;
+
     private String branch;
+
     private String address;
+
     private Double lat;
+
     private Double lon;
+
     @NotNull
     private Double totalPrice;
+
     @NotNull
     private LocalDateTime time;
+
     @NotNull
     private PaymentType paymentType;
+
     private String phoneNumber;
+
     private String comment;
+
     private boolean active;
+
     private String invoiceId;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductQuantity> productQuantities = new ArrayList<>();
+
     private boolean isPaid;
+
     private boolean isCancelled;
 
 }

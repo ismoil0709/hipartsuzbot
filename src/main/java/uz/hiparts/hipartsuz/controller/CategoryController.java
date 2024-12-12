@@ -30,10 +30,6 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
-    @GetMapping("/get/name/{name}")
-    public ResponseEntity<Category> getByName(@PathVariable String name) {
-        return ResponseEntity.ok(categoryService.getByName(name));
-    }
     @GetMapping("/get/all")
     public ResponseEntity<List<Category>> getAll() {
         return ResponseEntity.ok(categoryService.getAll());

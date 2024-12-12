@@ -6,9 +6,14 @@ import uz.hiparts.hipartsuz.model.User;
 
 import java.util.Optional;
 
+
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
+
     Optional<User> findByChatId(Long chatId);
+
     Optional<User> findByLastPhoneNumber(String phoneNumber);
+
     Optional<User> findByUsername(String username);
+
 }

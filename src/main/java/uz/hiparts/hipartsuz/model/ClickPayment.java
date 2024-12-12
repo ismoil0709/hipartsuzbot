@@ -22,7 +22,6 @@ public class ClickPayment {
 
     private Long serviceId;
 
-    //Номер платежа в системе CLICK. Отображается в СМС у клиента при оплате.
     private Long clickPaydocId;
 
     private String merchantTransId;

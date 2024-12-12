@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.model.Branch;
-import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
@@ -40,14 +39,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SendMessageService {
+
     private final LangService langService;
-    private final TelegramUserService telegramUserService;
     private final UserService userService;
     private final ProductService productService;
-    private final BotSettingsService botSettingsService;
     private final BranchRepository branchRepository;
-    private User user;
     private final CategoryRepository categoryRepository;
+    private final BotSettingsService botSettingsService;
+    private final TelegramUserService telegramUserService;
+
+    private User user;
 
     public SendMessage firstStart(TelegramUser telegramUser) {
         Long chatId = telegramUser.getChatId();
@@ -398,7 +399,6 @@ public class SendMessageService {
 
     public EditMessageText deleteBranch(TelegramUser telegramUser, Integer messageId) {
         List<InlineKeyboardButton> buttons = branchRepository.findAll().stream()
-                .filter(Branch::isActive)
                 .map(b -> KeyboardUtils.inlineButton(b.getName(), Callback.BRANCH_DELETE.getCallback() + b.getId()))
                 .collect(Collectors.toList());
         buttons.add(KeyboardUtils.inlineButton(
@@ -414,7 +414,6 @@ public class SendMessageService {
 
     public EditMessageText deleteCategory(TelegramUser telegramUser, Integer messageId) {
         List<InlineKeyboardButton> buttons = categoryRepository.findAll().stream()
-                .filter(Category::isActive)
                 .map(c -> KeyboardUtils.inlineButton(c.getName(), Callback.CATEGORY_DELETE.getCallback() + c.getId()))
                 .collect(Collectors.toList());
         buttons.add(KeyboardUtils.inlineButton(

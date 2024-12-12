@@ -10,11 +10,14 @@ import java.util.List;
 
 @Service
 public interface ProductService {
+
     ProductDto create(ProductCreateUpdateDto dto);
+
     ProductDto update(ProductCreateUpdateDto dto);
+
     ProductDto getById(Long id);
-    ProductDto getByName(String name);
-    ProductDto getByCategory(Category category);
+
     void delete(Long id);
+
     List<ProductDto> getAll();
 }

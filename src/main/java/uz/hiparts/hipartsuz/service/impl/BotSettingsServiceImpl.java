@@ -11,7 +11,32 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @RequiredArgsConstructor
 public class BotSettingsServiceImpl implements BotSettingsService {
+
     private final BotSettingsRepository botSettingsRepository;
+
+    @Override
+    public void setCurrency(String currency) {
+        botSettingsRepository.findById(1L).ifPresent(b->{
+            b.setCurrency(currency);
+            botSettingsRepository.save(b);
+        });
+    }
+
+    @Override
+    public void setDeliveryPrice(String deliveryPrice) {
+        botSettingsRepository.findById(1L).ifPresent(b->{
+            b.setDeliveryPrice(deliveryPrice);
+            botSettingsRepository.save(b);
+        });
+    }
+
+    @Override
+    public void setOperatorNumber(String operatorNumber) {
+        botSettingsRepository.findById(1L).ifPresent(b->{
+            b.setOperatorNumber(operatorNumber);
+            botSettingsRepository.save(b);
+        });
+    }
 
     @Override
     public String getCurrency() {
@@ -32,29 +57,5 @@ public class BotSettingsServiceImpl implements BotSettingsService {
         AtomicReference<String> number = new AtomicReference<>("");
         botSettingsRepository.findById(1L).ifPresent(b-> number.set(b.getOperatorNumber()));
         return number.get();
-    }
-
-    @Override
-    public void setOperatorNumber(String operatorNumber) {
-        botSettingsRepository.findById(1L).ifPresent(b->{
-            b.setOperatorNumber(operatorNumber);
-            botSettingsRepository.save(b);
-        });
-    }
-
-    @Override
-    public void setDeliveryPrice(String deliveryPrice) {
-        botSettingsRepository.findById(1L).ifPresent(b->{
-            b.setDeliveryPrice(deliveryPrice);
-            botSettingsRepository.save(b);
-        });
-    }
-
-    @Override
-    public void setCurrency(String currency) {
-        botSettingsRepository.findById(1L).ifPresent(b->{
-            b.setCurrency(currency);
-            botSettingsRepository.save(b);
-        });
     }
 }

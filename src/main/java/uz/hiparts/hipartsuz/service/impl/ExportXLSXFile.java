@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 public class ExportXLSXFile {
+
     private final ProductService productService;
 
     public ExportXLSXFile(ProductService productService) {
@@ -44,7 +45,6 @@ public class ExportXLSXFile {
             row.createCell(4).setCellValue(products.get(i).getImgPath());
             row.createCell(5).setCellValue(products.get(i).getImgId());
             row.createCell(6).setCellValue(products.get(i).getCategory().getName());
-            row.createCell(7).setCellValue(String.valueOf(products.get(i).isActive()));
             row.createCell(8).setCellValue(String.valueOf(products.get(i).getDiscount()));
         }
 

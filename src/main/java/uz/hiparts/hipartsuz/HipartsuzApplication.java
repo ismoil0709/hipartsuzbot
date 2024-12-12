@@ -9,18 +9,19 @@ import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
 
 @SpringBootApplication
 public class HipartsuzApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(HipartsuzApplication.class,args);
     }
+
     @Bean
     CommandLineRunner commandLineRunner(BotSettingsRepository botSettingsRepository) {
         return args -> {
-            System.out.println(System.getProperty("user.home"));
             if (botSettingsRepository.findById(1L).isEmpty()) {
                 botSettingsRepository.save(BotSettings.builder()
-                                .currency("0")
-                                .deliveryPrice("0")
-                                .operatorNumber("0")
+                                .currency("1000")
+                                .deliveryPrice("1000")
+                                .operatorNumber("1000")
                         .build());
             }
         };

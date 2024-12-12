@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import uz.hiparts.hipartsuz.dto.ClickDto;
-import uz.hiparts.hipartsuz.service.impl.PaymentServiceClickImpl;
+import uz.hiparts.hipartsuz.service.impl.PaymentServiceClick;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentServiceClickImpl paymentServiceClick;
+    private final PaymentServiceClick paymentServiceClick;
 
     @PostMapping(value = "/click/prepare",
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},

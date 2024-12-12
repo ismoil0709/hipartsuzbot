@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class KeyboardUtils {
+
     public static InlineKeyboardMarkup inlineMarkup(InlineKeyboardButton... buttons) {
         List<List<InlineKeyboardButton>> rows = Arrays.stream(buttons)
                 .map(button -> {
