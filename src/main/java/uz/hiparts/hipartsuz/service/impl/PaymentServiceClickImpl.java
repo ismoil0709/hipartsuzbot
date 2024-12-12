@@ -40,7 +40,7 @@ public class PaymentServiceClickImpl implements PaymentService<ClickDto> {
 
     {
         long unixTime = System.currentTimeMillis() / 1000L;
-        headers.set("Auth", "44526:" + encryptPasswordToSHA1(unixTime + getSecretKey()) + ":" + unixTime);
+        headers.set("Auth", "44167:" + encryptPasswordToSHA1(unixTime + getSecretKey()) + ":" + unixTime);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
