@@ -1,6 +1,5 @@
 package uz.hiparts.hipartsuz.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
@@ -14,8 +13,6 @@ import org.springframework.web.filter.CorsFilter;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import uz.hiparts.hipartsuz.service.telegramService.BotService;
 
-import java.io.IOException;
-
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,7 +22,13 @@ public class ApplicationConfiguration {
     @Value("${telegram.url}")
     private String url;
 
-    private final BotService botService;
+    @Bean
+    public BotService botService() {
+        BotService service = new BotService();
+        if (!service.getWebhookUrl().equals(url))
+            service.send(SetWebhook.builder().url(url).build());
+        return service;
+    }
 
     @Bean
     public CorsFilter corsFilter() {
@@ -46,12 +49,6 @@ public class ApplicationConfiguration {
         resourceBundleMessageSource.setFallbackToSystemLocale(false);
         resourceBundleMessageSource.setDefaultEncoding(CharEncoding.UTF_8);
         return resourceBundleMessageSource;
-    }
-
-    @PostConstruct
-    public void init() throws IOException {
-        if (!botService.getWebhookUrl().equals(url))
-            botService.send(SetWebhook.builder().url(url).build());
     }
 
 }

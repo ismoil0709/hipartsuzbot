@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Service
 public class BotService {
 
     private static final String BASE_URL = "https://api.telegram.org/bot";
