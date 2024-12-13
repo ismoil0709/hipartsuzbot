@@ -1,5 +1,6 @@
 package uz.hiparts.hipartsuz.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
@@ -22,13 +23,7 @@ public class ApplicationConfiguration {
     @Value("${telegram.url}")
     private String url;
 
-    @Bean
-    public BotService botService() {
-        BotService service = new BotService();
-        if (!service.getWebhookUrl().equals(url))
-            service.send(SetWebhook.builder().url(url).build());
-        return service;
-    }
+    private final BotService botService;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -49,6 +44,12 @@ public class ApplicationConfiguration {
         resourceBundleMessageSource.setFallbackToSystemLocale(false);
         resourceBundleMessageSource.setDefaultEncoding(CharEncoding.UTF_8);
         return resourceBundleMessageSource;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (!botService.getWebhookUrl().equals(url))
+            botService.send(SetWebhook.builder().url(url).build());
     }
 
 }

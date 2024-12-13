@@ -29,14 +29,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Service
 public class BotService {
 
     private static final String BASE_URL = "https://api.telegram.org/bot";
     private static final String FILE_URL = "https://api.telegram.org/file/bot";
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${telegram.token}")
-    private String token;
+    private final String token;
+
+    public BotService(@Value("${telegram.token}") String token) {
+        this.token = token;
+        System.out.println(this.token);
+    }
 
     public <T extends Serializable, Method extends BotApiMethod<T>> void send(Method method) {
         restTemplate.postForObject(BASE_URL + token + "/" + method.getMethod(), method, TelegramResultDto.class);
@@ -108,7 +113,6 @@ public class BotService {
 
     public String getWebhookUrl() {
         BotService.WebHookResult resultDto = restTemplate.getForObject(BASE_URL + token + "/getWebhookInfo", BotService.WebHookResult.class);
-        System.out.println(resultDto);
         if (resultDto != null) {
             if (resultDto.getResult().getUrl() != null) {
                 return resultDto.getResult().getUrl();
