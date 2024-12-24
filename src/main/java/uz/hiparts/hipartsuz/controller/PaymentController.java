@@ -1,10 +1,13 @@
 package uz.hiparts.hipartsuz.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import uz.hiparts.hipartsuz.dto.ClickDto;
+import uz.hiparts.hipartsuz.dto.json.PaycomRequestForm;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClick;
+import uz.hiparts.hipartsuz.service.impl.PaymentServicePayme;
 
 import java.util.Map;
 
@@ -14,6 +17,7 @@ import java.util.Map;
 public class PaymentController {
 
     private final PaymentServiceClick paymentServiceClick;
+    private final PaymentServicePayme paymentServicePayme;
 
     @PostMapping(value = "/click/prepare",
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
@@ -21,11 +25,6 @@ public class PaymentController {
     )
     public ClickDto prepareClick(@RequestParam Map<String, Object> request){
         return paymentServiceClick.prepare(mapRequestToDto(request));
-    }
-
-    @PostMapping("/payme/prepare")
-    public Map<String,String> preparePayme(){
-        return null;
     }
 
     @PostMapping(value = "/click/complete",
@@ -36,9 +35,10 @@ public class PaymentController {
         return paymentServiceClick.complete(mapRequestToDto(request));
     }
 
-    @PostMapping("/payme/complete")
-    public Map<String,String> completePayme(){
-        return null;
+    @PostMapping("/payme")
+    JSONObject payme(@RequestBody PaycomRequestForm requestForm,
+                    @RequestHeader("Authorization") String authorization) {
+        return paymentServicePayme.payWithPaycom(requestForm, authorization);
     }
 
     private ClickDto mapRequestToDto(Map<String, Object> request) {
