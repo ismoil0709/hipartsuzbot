@@ -4,6 +4,11 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  eskiz:
+    simulate: false
+    email: abduganiyev.ismoil001@gmail.com
+    password: ismoil_0709
+    sender-name: 4546
 server:
   port: 8443
 telegram:
