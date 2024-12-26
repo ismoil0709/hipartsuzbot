@@ -34,6 +34,7 @@ import uz.hiparts.hipartsuz.service.TelegramUserService;
 import uz.hiparts.hipartsuz.service.UserService;
 import uz.hiparts.hipartsuz.service.impl.ExportXLSXFile;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClick;
+import uz.hiparts.hipartsuz.service.impl.PaymentServicePayme;
 import uz.hiparts.hipartsuz.util.Regex;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
@@ -59,6 +60,7 @@ public class TelegramService {
     private final BotSettingsService botSettingsService;
     private final TelegramUserService telegramUserService;
     private final PaymentServiceClick paymentServiceClick;
+    private final PaymentServicePayme paymentServicePayme;
 
 
     public void handleMessage(Message message) {
@@ -391,6 +393,8 @@ public class TelegramService {
                     if (order.getPaymentType() == PaymentType.CLICK) {
                         paymentServiceClick.sendInvoice(order);
                         botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
+                    }else if (order.getPaymentType() == PaymentType.PAYME){
+                        paymentServicePayme.sendInvoice(order);
                     }
                 } else {
                     botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));

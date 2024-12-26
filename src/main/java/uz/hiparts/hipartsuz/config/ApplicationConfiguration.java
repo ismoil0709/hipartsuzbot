@@ -14,14 +14,24 @@ import org.springframework.web.filter.CorsFilter;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import uz.hiparts.hipartsuz.service.telegramService.BotService;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class ApplicationConfiguration {
 
+    @Value("${server.port}")
+    private int port;
+
     @Value("${telegram.url}")
     private String url;
+
+    @Value("${spring.profiles.active}")
+    private String profile;
 
     private final BotService botService;
 
@@ -48,8 +58,47 @@ public class ApplicationConfiguration {
 
     @PostConstruct
     public void init() {
+
+        if (profile.equals("loc"))
+            runNgrok();
+
         if (!botService.getWebhookUrl().equals(url))
             botService.send(SetWebhook.builder().url(url).build());
+    }
+
+    public void runNgrok() {
+        String ngrokPath = null;
+        String command = "which";
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            command = "where";
+        }
+        try {
+            System.out.println(command);
+            Process process = new ProcessBuilder(command, "ngrok").start();
+            process.waitFor();
+            int exitCode = process.exitValue();
+            if (exitCode == 0) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                ngrokPath = reader.readLine();
+                reader.close();
+            } else {
+                log.error("Failed to locate ngrok using 'which ngrok'. Please ensure ngrok is installed and accessible in your system PATH.");
+                System.exit(0);
+            }
+        } catch (IOException | InterruptedException e) {
+            log.error("Error while finding ngrok path: " + e.getMessage());
+            System.exit(0);
+        }
+        if (ngrokPath == null || url == null || port == 0) {
+            log.error("Missing required properties: ngrok_url, server_port, or ngrok not found. Ngrok tunnel creation skipped.");
+            System.exit(0);
+        } else {
+            try {
+                Process process = new ProcessBuilder(ngrokPath, "http", "--domain=" + url, String.valueOf(port)).start();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }

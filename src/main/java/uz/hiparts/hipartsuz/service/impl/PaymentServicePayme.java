@@ -20,6 +20,7 @@ import uz.hiparts.hipartsuz.repository.OrderTransactionRepository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,21 @@ public class PaymentServicePayme {
     private final OrderTransactionRepository orderTransactionRepository;
 
     private final Long TIME_EXPIRED_PAYCOM_ORDER = 43_200_000L;
+
+    public String sendInvoice(Order order){
+
+        String url = "https://checkout.paycom.uz/";
+
+        String params = "m=" + "<merchant_id>" +
+                ";" +
+                "ac.order_id=" + order.getId() +
+                ";" +
+                "a=" + order.getTotalPrice() * 100;
+
+        String encodedParams = Base64.getEncoder().encodeToString(params.getBytes());
+
+        return url + encodedParams;
+    }
 
     public JSONObject payWithPaycom(PaycomRequestForm requestForm, String authorization) {
 

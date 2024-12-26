@@ -70,13 +70,13 @@
 			<artifactId>jsonrpc2-base</artifactId>
 			<version>2.0</version>
 		</dependency>
-		<dependency>
-			<groupId>uz.eskiz</groupId>
-			<artifactId>eskiz-plugin</artifactId>
-			<version>0.0.1</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/eskiz-plugin-0.0.1.jar</systemPath>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>uz.eskiz</groupId>-->
+<!--			<artifactId>eskiz-plugin</artifactId>-->
+<!--			<version>0.0.1</version>-->
+<!--			<scope>system</scope>-->
+<!--			<systemPath>${basedir}/lib/eskiz-plugin-0.0.1.jar</systemPath>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
