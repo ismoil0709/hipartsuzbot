@@ -57,6 +57,9 @@ public class PaymentServicePayme {
 
         //BASIC AUTH BO'SH BO'LSA YOKI XATO KELGAN BO'LSA ERROR RESPONSE BERAMIZ
         if (authorization == null || checkPaycomUserAuth(authorization, response)) {
+            response.setError(new JSONRPC2Error(-32504,
+                    "Error authentication",
+                    "auth"));
             return response.toJSONObject();
         }
 
@@ -391,9 +394,6 @@ public class PaymentServicePayme {
             }
 
         }
-        response.setError(new JSONRPC2Error(-32504,
-                "Error authentication",
-                "auth"));
         return true;
     }
 
