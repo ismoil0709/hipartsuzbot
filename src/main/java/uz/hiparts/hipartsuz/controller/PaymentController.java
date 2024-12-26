@@ -37,7 +37,7 @@ public class PaymentController {
 
     @PostMapping("/payme")
     JSONObject payme(@RequestBody PaycomRequestForm requestForm,
-                    @RequestHeader("Authorization") String authorization) {
+                    @RequestHeader(value = "Authorization",required = false) String authorization) {
         return paymentServicePayme.payWithPaycom(requestForm, authorization);
     }
 

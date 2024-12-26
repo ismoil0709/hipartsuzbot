@@ -18,6 +18,7 @@ import uz.hiparts.hipartsuz.model.enums.TransactionState;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.OrderTransactionRepository;
 
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -55,9 +56,9 @@ public class PaymentServicePayme {
         JSONRPC2Response response = new JSONRPC2Response(params.getId());
 
         //BASIC AUTH BO'SH BO'LSA YOKI XATO KELGAN BO'LSA ERROR RESPONSE BERAMIZ
-//        if (authorization == null || checkPaycomUserAuth(authorization, response)) {
-//            return response.toJSONObject();
-//        }
+        if (authorization == null || checkPaycomUserAuth(authorization, response)) {
+            return response.toJSONObject();
+        }
 
         //PAYCOM QAYSI METHODDA KELAYOTGANLIGIGA QARAB ISH BAJARAMIZ
         switch (requestForm.getMethod()) {
@@ -371,30 +372,29 @@ public class PaymentServicePayme {
      * @param response  JSONRPC2Response
      * @return boolean
      */
-//    private boolean checkPaycomUserAuth(String basicAuth, JSONRPC2Response response) {
-//
-//        basicAuth = basicAuth.substring("Basic".length()).trim();
-//
-//        byte[] decode = Base64.getDecoder().decode(basicAuth);
-//
-//        basicAuth = new String(decode, Charset.defaultCharset());
-//
-//        String[] split = basicAuth.split(":", 2);
-//
-//
-//        if (optionalClient.isPresent()) {
-//            Client client = optionalClient.get();
-//            if (passwordEncoder.matches(split[1], client.getPassword())) {
-//
-//                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(client, null, new ArrayList<>());
-//
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//            }
-//        }
-//        response.setError(new JSONRPC2Error(-32504,
-//                "Error authentication",
-//                "auth"));
-//        return false;
-//    }
+    private boolean checkPaycomUserAuth(String basicAuth, JSONRPC2Response response) {
+
+        basicAuth = basicAuth.substring("Basic".length()).trim();
+
+        byte[] decode = Base64.getDecoder().decode(basicAuth);
+
+        basicAuth = new String(decode, Charset.defaultCharset());
+
+        String[] split = basicAuth.split(":", 2);
+
+        if (split[0].equals("Paycom")){
+
+            if (split[1].equals("zURiP5K2HGzCix#hj3eYfbsdX#Rjc#2ENQHp") || split[1].equals("WybcW0dYIXv78b9MIEfcsSh2HitnomIvcnD1")) {
+
+                return false;
+
+            }
+
+        }
+        response.setError(new JSONRPC2Error(-32504,
+                "Error authentication",
+                "auth"));
+        return true;
+    }
 
 }
