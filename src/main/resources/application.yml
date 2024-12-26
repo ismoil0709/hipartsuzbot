@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: loc
+    active: prod
   application:
     name: hipartsuz
   jpa:
