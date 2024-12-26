@@ -5,12 +5,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import uz.eskiz.ApplicationAutoConfiguration;
+//import uz.eskiz.ApplicationAutoConfiguration;
 import uz.hiparts.hipartsuz.model.BotSettings;
 import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
 
-@SpringBootApplication(exclude = ApplicationAutoConfiguration.class)
-@Import({ApplicationAutoConfiguration.class})
+@SpringBootApplication
+//@Import({ApplicationAutoConfiguration.class})
 public class HipartsuzApplication {
 
     public static void main(String[] args) {

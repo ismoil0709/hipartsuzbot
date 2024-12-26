@@ -2,7 +2,6 @@ package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uz.eskiz.service.SendSmsService;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
@@ -21,7 +20,7 @@ public class SMSService {
 
     private final BotService botService;
     private final UserService userService;
-    private final SendSmsService sendSmsService;
+//    private final SendSmsService sendSmsService;
     private final SendMessageService sendMessageService;
     private final TelegramUserService telegramUserService;
 
@@ -39,7 +38,7 @@ public class SMSService {
 
         System.out.println(code);
 
-        sendSmsService.sendSms(phoneNumber,text);
+//        sendSmsService.sendSms(phoneNumber,text);
 
         System.out.println(code);
 
