@@ -94,7 +94,7 @@ public class ApplicationConfiguration {
             System.exit(0);
         } else {
             try {
-                Process process = new ProcessBuilder(ngrokPath, "http", "--domain=" + url, String.valueOf(port)).start();
+                Process process = new ProcessBuilder(ngrokPath, "http", "--domain=" + url.split("://")[1].split("/api")[0], String.valueOf(port)).start();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

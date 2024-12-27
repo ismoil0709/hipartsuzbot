@@ -20,7 +20,7 @@ public class SMSService {
 
     private final BotService botService;
     private final UserService userService;
-//    private final SendSmsService sendSmsService;
+    private final SendSmsService sendSmsService;
     private final SendMessageService sendMessageService;
     private final TelegramUserService telegramUserService;
 
@@ -38,7 +38,7 @@ public class SMSService {
 
         System.out.println(code);
 
-//        sendSmsService.sendSms(phoneNumber,text);
+        sendSmsService.sendSms(phoneNumber,text);
 
         System.out.println(code);
 

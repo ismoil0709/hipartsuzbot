@@ -3,6 +3,7 @@ package uz.hiparts.hipartsuz.service.telegramService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
@@ -392,9 +393,13 @@ public class TelegramService {
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
                         paymentServiceClick.sendInvoice(order);
-                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId()));
-                    }else if (order.getPaymentType() == PaymentType.PAYME){
-                        paymentServicePayme.sendInvoice(order);
+                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
+                    } else if (order.getPaymentType() == PaymentType.PAYME) {
+                        String paymentUrl = paymentServicePayme.sendInvoice(order);
+                        botService.send(SendMessage.builder()
+                                .text(paymentUrl)
+                                .chatId(callbackQuery.getMessage().getChatId())
+                                .build());
                     }
                 } else {
                     botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));

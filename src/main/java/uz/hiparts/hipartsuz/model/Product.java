@@ -14,7 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Setter
 @Builder
 @ToString
-@SQLRestriction("isActive = true")
+@SQLRestriction("is_active = true")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {

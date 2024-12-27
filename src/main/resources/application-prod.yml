@@ -15,6 +15,10 @@ telegram:
   url: https://hipartsbot.uz/api/v1/telegram
   token: 6412338008:AAFcXM2MXc2mCSUb3Rv3U1fP_JRY9GA77_A
 secret:
+  payme:
+    merchant_id: 676d28ce24c920882f008555
+    secret_key_test: WybcW0dYIXv78b9MIEfcsSh2HitnomIvcnD1
+    secret_key_prod: zURiP5K2HGzCix#hj3eYfbsdX#Rjc#2ENQHpx
   click:
     key: iCUfO2CfZkSg
     merchant_user_id : 44167

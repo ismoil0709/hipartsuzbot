@@ -4,6 +4,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.json.Account;
 import uz.hiparts.hipartsuz.dto.json.AdditionalInfo;
@@ -29,6 +30,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentServicePayme {
 
+    @Value("${secret.payme.secret_key_test}")
+    private String secretKeyTest;
+    @Value("${secret.payme.secret_key_prod}")
+    private String secretKeyProd;
+    @Value("${secret.payme.merchant_id}")
+    private String merchantId;
+
     private final OrderRepository orderRepository;
     private final OrderTransactionRepository orderTransactionRepository;
 
@@ -36,9 +44,11 @@ public class PaymentServicePayme {
 
     public String sendInvoice(Order order){
 
+        order = orderRepository.save(order);
+
         String url = "https://checkout.paycom.uz/";
 
-        String params = "m=" + "<merchant_id>" +
+        String params = "m=" + merchantId +
                 ";" +
                 "ac.order_id=" + order.getId() +
                 ";" +
@@ -387,11 +397,7 @@ public class PaymentServicePayme {
 
         if (split[0].equals("Paycom")){
 
-            if (split[1].equals("zURiP5K2HGzCix#hj3eYfbsdX#Rjc#2ENQHp") || split[1].equals("WybcW0dYIXv78b9MIEfcsSh2HitnomIvcnD1")) {
-
-                return false;
-
-            }
+            return !split[1].equals(secretKeyTest) && !split[1].equals(secretKeyProd);
 
         }
         return true;
