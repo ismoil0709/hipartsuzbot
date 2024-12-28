@@ -2,6 +2,7 @@ package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uz.eskiz.service.SendSmsService;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.TelegramUser;
 import uz.hiparts.hipartsuz.model.User;
