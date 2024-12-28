@@ -6,11 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 //import uz.eskiz.ApplicationAutoConfiguration;
+import uz.eskiz.ApplicationAutoConfiguration;
 import uz.hiparts.hipartsuz.model.BotSettings;
 import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
 
-@SpringBootApplication
-//@Import({ApplicationAutoConfiguration.class})
+@SpringBootApplication(exclude = { ApplicationAutoConfiguration.class })
+@Import({ApplicationAutoConfiguration.class})
 public class HipartsuzApplication {
 
     public static void main(String[] args) {
