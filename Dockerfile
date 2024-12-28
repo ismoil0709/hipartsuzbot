@@ -1,11 +1,10 @@
 FROM maven:3.8.3-openjdk-17 AS build-plugin
 WORKDIR /plugin
-COPY ./eskiz-plugin .
+COPY ../eskiz-plugin-java .
 RUN mvn clean package -DskipTests
 
 FROM maven:3.8.3-openjdk-17 AS build-main
 WORKDIR /app
-COPY .m2 /root/.m2
 COPY . .
 RUN mkdir -p lib
 COPY --from=build-plugin /plugin/target/eskiz-plugin-0.0.1.jar /app/lib/eskiz-plugin-0.0.1.jar
