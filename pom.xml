@@ -74,8 +74,6 @@
 			<groupId>uz.eskiz</groupId>
 			<artifactId>eskiz-plugin</artifactId>
 			<version>0.0.1</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/eskiz-plugin-0.0.1.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
