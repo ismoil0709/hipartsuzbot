@@ -7,7 +7,7 @@ spring:
   eskiz:
     simulate: false
     email: abduganiyev.ismoil001@gmail.com
-    password: ismoil_0709
+    password: fw0lLkWPwRclyDkSREk91DrUkrLRDrrNuBbNfmMe
     sender-name: 4546
 server:
   port: 8443
