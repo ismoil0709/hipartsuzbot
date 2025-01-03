@@ -20,11 +20,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.WebhookInfo;
 import uz.hiparts.hipartsuz.dto.TelegramResultDto;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -74,14 +70,9 @@ public class BotService {
 
     public String getFile(String fileId) {
         String fileUrl = "";
-        String directoryPath = "/home/user/product_photo";
-        Path directory = Path.of(directoryPath);
-        String fileName;
+       String fileName;
 
         try {
-            if (!Files.exists(directory)) {
-                Files.createDirectories(directory);
-            }
             BotService.FileResponse response = restTemplate.getForObject(BASE_URL + token + "getFile?file_id=" + fileId, BotService.FileResponse.class);
 
             if (response != null && response.isOk()) {
@@ -93,7 +84,7 @@ public class BotService {
                 byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
 
                 if (fileBytes != null) {
-                    Files.write(directory.resolve(fileName), fileBytes, StandardOpenOption.CREATE);
+//                    Files.write(directory.resolve(fileName), fileBytes, StandardOpenOption.CREATE);
                     System.out.println("File downloaded successfully: " + fileName);
                 } else {
                     System.out.println("Failed to download the file.");
@@ -103,7 +94,7 @@ public class BotService {
                 System.out.println("Failed to get file path.");
                 return fileUrl;
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             System.err.println("Error occurred: " + ex.getMessage());
             return fileUrl;
         }
