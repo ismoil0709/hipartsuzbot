@@ -226,12 +226,25 @@ public class PaymentServicePayme {
                 return;
             }
 
+            Long orderId = requestForm.getParams().getAccount().getOrder();
+
+            Optional<OrderTransaction> byOrderId = orderTransactionRepository.findByOrderId(orderId);
+
+            if (byOrderId.isPresent()) {
+                response.setError(new JSONRPC2Error(
+                        -31099,
+                        "This order already have transaction",
+                        "transaction"));
+                return;
+            }
+
+
             //YANGI OrderTransaction
             orderTransaction = new OrderTransaction(
                     requestForm.getParams().getId(),
                     new Timestamp(requestForm.getParams().getTime()),
                     TransactionState.STATE_IN_PROGRESS.getCode(),
-                    requestForm.getParams().getAccount().getOrder());
+                    orderId);
 
             orderTransactionRepository.save(orderTransaction);
         }
@@ -299,7 +312,11 @@ public class PaymentServicePayme {
         //OrderTransaction GA TO'LOV QILINIB YAKUNIGA YETGAN BO'LSA
         if (orderTransaction.getState().equals(TransactionState.STATE_DONE.getCode())) {
             response.setResult(new ResultForm(
+                    null,
+                    null,
+                    null,
                     orderTransaction.getPerformTime().getTime(),
+                    null,
                     orderTransaction.getState(),
                     orderTransaction.getId().toString()));
             return;

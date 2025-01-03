@@ -13,4 +13,6 @@ public interface OrderTransactionRepository extends JpaRepository<OrderTransacti
     Optional<OrderTransaction> findByTransactionId(String id);
 
     List<OrderTransaction> findAllByStateAndTransactionCreationTimeBetween(Integer code, Timestamp from, Timestamp to);
+
+    Optional<OrderTransaction> findByOrderId(Long orderId);
 }

@@ -74,7 +74,7 @@ public class BotService {
 
     public String getFile(String fileId) {
         String fileUrl = "";
-        String directoryPath = "/home/user/product_photo";
+        String directoryPath = System.getProperty("user.home") +  "/product_photo";
         Path directory = Path.of(directoryPath);
         String fileName;
 
@@ -89,7 +89,7 @@ public class BotService {
                 String fileExtension = originalFilePath.substring(originalFilePath.lastIndexOf('.'));
                 fileName = UUID.randomUUID() + fileExtension;
 
-                fileUrl = FILE_URL + token + originalFilePath;
+                fileUrl = FILE_URL + token + "/" + originalFilePath;
                 byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
 
                 if (fileBytes != null) {
