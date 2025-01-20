@@ -11,7 +11,7 @@ public class AdditionalInfo {
 
     private Double orderSum;
 
-    private String site = "pdp.uz";
+    private String site = "@hipartsuzbot";
 
     public AdditionalInfo(Long orderId, Double orderSum) {
         this.orderId = orderId;

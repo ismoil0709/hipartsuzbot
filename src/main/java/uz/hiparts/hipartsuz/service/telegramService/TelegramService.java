@@ -25,6 +25,7 @@ import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.model.enums.PaymentType;
 import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
+import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.ProductRepository;
 import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.BranchService;
@@ -55,6 +56,7 @@ public class TelegramService {
     private final BranchService branchService;
     private final ExportXLSXFile exportXLSXFile;
     private final ProductService productService;
+    private final OrderRepository orderRepository;
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final SendMessageService sendMessageService;
@@ -402,6 +404,7 @@ public class TelegramService {
                                 .build());
                     }
                 } else {
+                    orderRepository.save(order);
                     botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 }
