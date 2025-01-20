@@ -20,7 +20,6 @@ import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.OrderTransactionRepository;
 
 import java.nio.charset.Charset;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -201,7 +200,7 @@ public class PaymentServicePayme {
             }
 
             //OrderTransaction YARATILGAN VAQTI 12 SOATDAN  KO'P BO'LSA XATO QAYTARAMIZ. MUDDATI O'TGAN ORDER
-            if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime().getTime() > TIME_EXPIRED_PAYCOM_ORDER) {
+            if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime() > TIME_EXPIRED_PAYCOM_ORDER) {
                 response.setError(new JSONRPC2Error(
                         -31008,
                         "Unable to complete operation",
@@ -242,7 +241,7 @@ public class PaymentServicePayme {
             //YANGI OrderTransaction
             orderTransaction = new OrderTransaction(
                     requestForm.getParams().getId(),
-                    new Timestamp(requestForm.getParams().getTime()),
+                    requestForm.getParams().getTime(),
                     TransactionState.STATE_IN_PROGRESS.getCode(),
                     orderId);
 
@@ -251,7 +250,7 @@ public class PaymentServicePayme {
 
         //AVVAL SAQLANGAN MUDDATO O'TMAGAN OrderTransaction YOKI YANGI SAQLANGAN OrderTransaction NING MA'LUMOTLARI QAYTARILYAPTI
         response.setResult(new ResultForm(
-                orderTransaction.getTransactionCreationTime().getTime(),
+                orderTransaction.getTransactionCreationTime(),
                 orderTransaction.getState(),
                 orderTransaction.getId().toString()));
     }
@@ -284,7 +283,7 @@ public class PaymentServicePayme {
         if (orderTransaction.getState().equals(TransactionState.STATE_IN_PROGRESS.getCode())) {
 
             //OrderTransaction YARATILGAN VAQTI 12 SOATDAN  KO'P BO'LSA XATO QAYTARAMIZ. MUDDATI O'TGAN ORDER
-            if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime().getTime() > TIME_EXPIRED_PAYCOM_ORDER) {
+            if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime() > TIME_EXPIRED_PAYCOM_ORDER) {
                 response.setError(new JSONRPC2Error(
                         -31008,
                         "Unable to complete operation",
@@ -298,7 +297,7 @@ public class PaymentServicePayme {
             }
 
             orderTransaction.setState(TransactionState.STATE_DONE.getCode());
-            orderTransaction.setPerformTime(new Timestamp(System.currentTimeMillis()));
+            orderTransaction.setPerformTime(System.currentTimeMillis());
             orderTransactionRepository.save(orderTransaction);
 
             //TO'LOV BO'LDI
@@ -315,7 +314,7 @@ public class PaymentServicePayme {
                     null,
                     null,
                     null,
-                    orderTransaction.getPerformTime().getTime(),
+                    orderTransaction.getPerformTime(),
                     null,
                     orderTransaction.getState(),
                     orderTransaction.getId().toString()));
@@ -351,9 +350,9 @@ public class PaymentServicePayme {
         OrderTransaction orderTransaction = optionalOrderTransaction.get();
 
         response.setResult(new ResultForm(
-                orderTransaction.getCancelTime() != null ? orderTransaction.getCancelTime().getTime() : 0,
-                orderTransaction.getTransactionCreationTime().getTime(),
-                orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime().getTime() : 0,
+                orderTransaction.getCancelTime() != null ? orderTransaction.getCancelTime() : 0,
+                orderTransaction.getTransactionCreationTime(),
+                orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
                 orderTransaction.getReason(),
                 orderTransaction.getState(),
                 orderTransaction.getId().toString()));
@@ -370,7 +369,7 @@ public class PaymentServicePayme {
 
         //DB DAN PAYCOM BERGAN VAQT OALIG'IDA TRANSACTION STATE DONE(2) BO'LGAN OrderTransaction LAR OLINADI
         List<OrderTransaction> orderTransactionList =
-                orderTransactionRepository.findAllByStateAndTransactionCreationTimeBetween(TransactionState.STATE_DONE.getCode(), new Timestamp(requestForm.getParams().getFrom()), new Timestamp(requestForm.getParams().getTo()));
+                orderTransactionRepository.findAllByStateAndTransactionCreationTimeBetween(TransactionState.STATE_DONE.getCode(), requestForm.getParams().getFrom(), requestForm.getParams().getTo());
 
         List<Transaction> transactions = new ArrayList<>();
 
@@ -381,11 +380,11 @@ public class PaymentServicePayme {
                     new Account(orderTransaction.getOrderId()),
                     orderTransaction.getOrder().getTotalPrice(),
                     0L,
-                    orderTransaction.getTransactionCreationTime().getTime(),
-                    orderTransaction.getPerformTime().getTime(),
+                    orderTransaction.getTransactionCreationTime(),
+                    orderTransaction.getPerformTime(),
                     null,
                     orderTransaction.getState(),
-                    orderTransaction.getTransactionCreationTime().getTime(),
+                    orderTransaction.getTransactionCreationTime(),
                     orderTransaction.getId().toString());
 
             transactions.add(transaction);

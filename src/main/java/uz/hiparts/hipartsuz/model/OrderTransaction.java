@@ -26,11 +26,11 @@ public class OrderTransaction {
 
     private String transactionId;
 
-    private Timestamp transactionCreationTime;
+    private Long transactionCreationTime;
 
-    private Timestamp performTime;
+    private Long performTime;
 
-    private Timestamp cancelTime;
+    private Long cancelTime;
 
     private Integer reason;
 
@@ -43,7 +43,7 @@ public class OrderTransaction {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    public OrderTransaction(String transactionId, Timestamp transactionCreationTime, Integer state, Long orderId) {
+    public OrderTransaction(String transactionId, Long transactionCreationTime, Integer state, Long orderId) {
         this.transactionId = transactionId;
         this.transactionCreationTime = transactionCreationTime;
         this.state = state;
