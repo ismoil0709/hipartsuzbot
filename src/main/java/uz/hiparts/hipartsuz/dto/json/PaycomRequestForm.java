@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaycomRequestForm {
 
+    private Long id;
+
     private String method;
 
     private Params params;

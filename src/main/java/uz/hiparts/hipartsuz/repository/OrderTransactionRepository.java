@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface OrderTransactionRepository extends JpaRepository<OrderTransaction, Long> {
     Optional<OrderTransaction> findByTransactionId(String id);
 
-    List<OrderTransaction> findAllByStateAndTransactionCreationTimeBetween(Integer state, Long transactionCreationTime, Long transactionCreationTime2);
-
+    List<OrderTransaction> findAllByTransactionCreationTimeBetweenOrderByTransactionCreationTimeAsc(
+            Long from, Long to);
     Optional<OrderTransaction> findByOrderId(Long orderId);
 }
