@@ -1,6 +1,5 @@
 package uz.hiparts.hipartsuz.dto.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,10 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResultForm {
-
-    private Long id;
 
     @JsonProperty(value = "cancel_time")
     private Long cancelTime;
@@ -33,15 +30,6 @@ public class ResultForm {
     //CREATE TRANACTION DA KETADI BIZDAN
     public ResultForm(Long createTime, Integer state, String transaction) {
         this.createTime = createTime;
-        this.state = state;
-        this.transaction = transaction;
-    }
-
-    public ResultForm(Long cancelTime, Long createTime, Long performTime, Integer reason, Integer state, String transaction) {
-        this.cancelTime = cancelTime;
-        this.createTime = createTime;
-        this.performTime = performTime;
-        this.reason = reason;
         this.state = state;
         this.transaction = transaction;
     }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import uz.hiparts.hipartsuz.dto.json.Account;
 import uz.hiparts.hipartsuz.dto.json.AdditionalInfo;
 import uz.hiparts.hipartsuz.dto.json.CheckPerformTransactionAllowResponse;
-import uz.hiparts.hipartsuz.dto.json.Params;
 import uz.hiparts.hipartsuz.dto.json.PaycomRequestForm;
 import uz.hiparts.hipartsuz.dto.json.ResultForm;
 import uz.hiparts.hipartsuz.dto.json.Transaction;
@@ -20,10 +19,7 @@ import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.OrderTransactionRepository;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -59,10 +55,7 @@ public class PaymentServicePayme {
     }
 
     public JSONObject payWithPaycom(PaycomRequestForm requestForm, String authorization) {
-
-        Params params = requestForm.getParams();
-
-        JSONRPC2Response response = new JSONRPC2Response(params.getId());
+        JSONRPC2Response response = new JSONRPC2Response(requestForm.getId());
 
         //BASIC AUTH BO'SH BO'LSA YOKI XATO KELGAN BO'LSA ERROR RESPONSE BERAMIZ
         if (authorization == null || checkPaycomUserAuth(authorization, response)) {
@@ -89,9 +82,75 @@ public class PaymentServicePayme {
             case "GetStatement":
                 getStatement(requestForm, response);
                 break;
+            case "CancelTransaction":
+                cancelTransaction(requestForm, response);
+                break;
+            default:
+                response.setError(new JSONRPC2Error(
+                        -32601,
+                        "Method not found",
+                        requestForm.getMethod()));
+                break;
         }
 
         return response.toJSONObject();
+    }
+
+    private void cancelTransaction(PaycomRequestForm requestForm, JSONRPC2Response response) {
+        String transactionId = requestForm.getParams().getId();
+        Optional<OrderTransaction> optionalOrderTransaction = orderTransactionRepository.findByTransactionId(transactionId);
+
+        if (optionalOrderTransaction.isEmpty()) {
+            response.setError(new JSONRPC2Error(
+                    -31003,
+                    "Transaction not found",
+                    "transaction"));
+            return;
+        }
+
+        OrderTransaction orderTransaction = optionalOrderTransaction.get();
+
+        if (orderTransaction.getState().equals(TransactionState.STATE_DONE.getCode())) {
+            response.setError(new JSONRPC2Error(
+                    -31007,
+                    "Unable to cancel transaction. Transaction already performed.",
+                    "transaction"));
+            return;
+        }
+
+        // Already cancelled
+        if (orderTransaction.getState().equals(TransactionState.STATE_CANCELED.getCode())) {
+            response.setResult(new ResultForm(
+                    orderTransaction.getCancelTime() != null ? orderTransaction.getCancelTime() : 0,
+                    null,
+                    orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
+                    orderTransaction.getReason(),
+                    orderTransaction.getState(),
+                    orderTransaction.getTransactionId()));
+            return;
+        }
+
+        // Cancel if trans STATE_IN_PROGRESS
+        if (orderTransaction.getState().equals(TransactionState.STATE_IN_PROGRESS.getCode())) {
+            orderTransaction.setState(TransactionState.STATE_CANCELED.getCode());
+            orderTransaction.setCancelTime(System.currentTimeMillis());
+
+            if (requestForm.getParams().getReason() != null) {
+                orderTransaction.setReason(requestForm.getParams().getReason());
+            } else {
+                orderTransaction.setReason(1);
+            }
+
+            orderTransactionRepository.save(orderTransaction);
+
+            response.setResult(new ResultForm(
+                    orderTransaction.getCancelTime(),
+                    null,
+                    orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
+                    orderTransaction.getReason(),
+                    orderTransaction.getState(),
+                    orderTransaction.getTransactionId()));
+        }
     }
 
     public boolean checkPerformTransaction(PaycomRequestForm requestForm, JSONRPC2Response response) {
@@ -166,7 +225,7 @@ public class PaymentServicePayme {
         }
 
         response.setResult(new CheckPerformTransactionAllowResponse(
-                new AdditionalInfo(order.getId(), order.getTotalPrice()),
+                new AdditionalInfo(order.getId(), order.getTotalPrice() * 100),
                 true));
         return true;
     }
@@ -252,7 +311,7 @@ public class PaymentServicePayme {
         response.setResult(new ResultForm(
                 orderTransaction.getTransactionCreationTime(),
                 orderTransaction.getState(),
-                orderTransaction.getId().toString()));
+                requestForm.getParams().getId()));
     }
 
 
@@ -313,11 +372,10 @@ public class PaymentServicePayme {
             response.setResult(new ResultForm(
                     null,
                     null,
-                    null,
                     orderTransaction.getPerformTime(),
                     null,
                     orderTransaction.getState(),
-                    orderTransaction.getId().toString()));
+                    orderTransaction.getTransactionId()));
             return;
         }
 
@@ -355,7 +413,7 @@ public class PaymentServicePayme {
                 orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
                 orderTransaction.getReason(),
                 orderTransaction.getState(),
-                orderTransaction.getId().toString()));
+                orderTransaction.getTransactionId()));
     }
 
     /**
@@ -368,30 +426,36 @@ public class PaymentServicePayme {
     private void getStatement(PaycomRequestForm requestForm, JSONRPC2Response response) {
 
         //DB DAN PAYCOM BERGAN VAQT OALIG'IDA TRANSACTION STATE DONE(2) BO'LGAN OrderTransaction LAR OLINADI
-        List<OrderTransaction> orderTransactionList =
-                orderTransactionRepository.findAllByStateAndTransactionCreationTimeBetween(TransactionState.STATE_DONE.getCode(), requestForm.getParams().getFrom(), requestForm.getParams().getTo());
+        List<OrderTransaction> orderTransactionList = orderTransactionRepository
+                .findAllByTransactionCreationTimeBetweenOrderByTransactionCreationTimeAsc(
+                        requestForm.getParams().getFrom(),
+                        requestForm.getParams().getTo());
 
         List<Transaction> transactions = new ArrayList<>();
 
         //OrderTransaction LARDAN Transaction OBJECTIGA MAP QILINADI
         for (OrderTransaction orderTransaction : orderTransactionList) {
-            Transaction transaction = new Transaction(
-                    orderTransaction.getTransactionId(),
-                    new Account(orderTransaction.getOrderId()),
-                    orderTransaction.getOrder().getTotalPrice(),
-                    0L,
-                    orderTransaction.getTransactionCreationTime(),
-                    orderTransaction.getPerformTime(),
-                    null,
-                    orderTransaction.getState(),
-                    orderTransaction.getTransactionCreationTime(),
-                    orderTransaction.getId().toString());
+            Transaction transaction = new Transaction();
+            transaction.setId(orderTransaction.getTransactionId());
+            transaction.setAccount(new Account(orderTransaction.getOrderId()));
+            transaction.setAmount(orderTransaction.getOrder().getTotalPrice() * 100);
+            transaction.setCreateTime(orderTransaction.getTransactionCreationTime());
+            transaction.setTime(orderTransaction.getTransactionCreationTime());
+            transaction.setPerformTime(orderTransaction.getPerformTime() != null ?
+                    orderTransaction.getPerformTime() : 0L);
+            transaction.setCancelTime(orderTransaction.getCancelTime() != null ?
+                    orderTransaction.getCancelTime() : 0L);
+            transaction.setState(orderTransaction.getState());
+            transaction.setReason(orderTransaction.getReason());
+            transaction.setTransaction(orderTransaction.getOrderId().toString());
 
             transactions.add(transaction);
         }
 
         //PAYCOMGA Transaction LISTI YUBORILADI
-        response.setResult(transactions);
+        Map<String, Object> result = new HashMap<>();
+        result.put("transactions", transactions);
+        response.setResult(result);
     }
 
     /**
