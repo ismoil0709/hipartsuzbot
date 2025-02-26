@@ -6,12 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uz.hiparts.hipartsuz.dto.json.Account;
-import uz.hiparts.hipartsuz.dto.json.AdditionalInfo;
-import uz.hiparts.hipartsuz.dto.json.CheckPerformTransactionAllowResponse;
-import uz.hiparts.hipartsuz.dto.json.PaycomRequestForm;
-import uz.hiparts.hipartsuz.dto.json.ResultForm;
-import uz.hiparts.hipartsuz.dto.json.Transaction;
+import uz.hiparts.hipartsuz.dto.json.*;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.OrderTransaction;
 import uz.hiparts.hipartsuz.model.enums.TransactionState;
@@ -37,7 +32,7 @@ public class PaymentServicePayme {
 
     private final Long TIME_EXPIRED_PAYCOM_ORDER = 43_200_000L;
 
-    public String sendInvoice(Order order){
+    public String sendInvoice(Order order) {
 
         order = orderRepository.save(order);
 
@@ -57,7 +52,6 @@ public class PaymentServicePayme {
     public JSONObject payWithPaycom(PaycomRequestForm requestForm, String authorization) {
         JSONRPC2Response response = new JSONRPC2Response(requestForm.getId());
 
-        //BASIC AUTH BO'SH BO'LSA YOKI XATO KELGAN BO'LSA ERROR RESPONSE BERAMIZ
         if (authorization == null || checkPaycomUserAuth(authorization, response)) {
             response.setError(new JSONRPC2Error(-32504,
                     "Error authentication",
@@ -65,7 +59,6 @@ public class PaymentServicePayme {
             return response.toJSONObject();
         }
 
-        //PAYCOM QAYSI METHODDA KELAYOTGANLIGIGA QARAB ISH BAJARAMIZ
         switch (requestForm.getMethod()) {
             case "CheckPerformTransaction":
                 checkPerformTransaction(requestForm, response);
@@ -118,36 +111,26 @@ public class PaymentServicePayme {
             return;
         }
 
-        // Already cancelled
         if (orderTransaction.getState().equals(TransactionState.STATE_CANCELED.getCode())) {
-            response.setResult(new ResultForm(
+            response.setResult(new CancelTransactionDto(
                     orderTransaction.getCancelTime() != null ? orderTransaction.getCancelTime() : 0,
-                    null,
-                    orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
-                    orderTransaction.getReason(),
                     orderTransaction.getState(),
                     orderTransaction.getTransactionId()));
-            return;
         }
 
-        // Cancel if trans STATE_IN_PROGRESS
         if (orderTransaction.getState().equals(TransactionState.STATE_IN_PROGRESS.getCode())) {
             orderTransaction.setState(TransactionState.STATE_CANCELED.getCode());
             orderTransaction.setCancelTime(System.currentTimeMillis());
 
-            if (requestForm.getParams().getReason() != null) {
+            if (requestForm.getParams().getReason() != null)
                 orderTransaction.setReason(requestForm.getParams().getReason());
-            } else {
+            else
                 orderTransaction.setReason(1);
-            }
 
             orderTransactionRepository.save(orderTransaction);
 
-            response.setResult(new ResultForm(
-                    orderTransaction.getCancelTime(),
-                    null,
-                    orderTransaction.getPerformTime() != null ? orderTransaction.getPerformTime() : 0,
-                    orderTransaction.getReason(),
+            response.setResult(new CancelTransactionDto(
+                    orderTransaction.getCancelTime() != null ? orderTransaction.getCancelTime() : 0,
                     orderTransaction.getState(),
                     orderTransaction.getTransactionId()));
         }
@@ -155,7 +138,6 @@ public class PaymentServicePayme {
 
     public boolean checkPerformTransaction(PaycomRequestForm requestForm, JSONRPC2Response response) {
 
-        //PAYCOMDAN ACOUNT FIELDI KELMASA
         if (requestForm.getParams().getAccount() == null) {
             response.setError(new JSONRPC2Error(
                     -31050,
@@ -165,7 +147,6 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //PAYCOMDAN ACOUNT FIELDI KELMASA
         if (requestForm.getParams().getAccount().getOrder() == null) {
             response.setError(new JSONRPC2Error(
                     -31050,
@@ -175,7 +156,6 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //PAYCOMDAN AMOUNT FIELDI NULL YOKI 0 KELSA
         if (requestForm.getParams().getAmount() == null || requestForm.getParams().getAmount() == 0) {
             response.setError(new JSONRPC2Error(
                     -31001,
@@ -184,10 +164,8 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //PAYCOM DAN KELGAN ORDER ID ORQALI ORDERNI OLAMIZ
         Optional<Order> optionalOrder = orderRepository.findById(requestForm.getParams().getAccount().getOrder());
 
-        //AGAR ORDER BO'LSA
         if (optionalOrder.isEmpty()) {
             response.setError(new JSONRPC2Error(
                     -31050,
@@ -196,7 +174,6 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //ORDER SUM BILAN PAYCOMDAN KELGAN SUM TENGLIGI TEKSHIRILYAPTI
         Order order = optionalOrder.get();
         if (!order.getTotalPrice().equals(requestForm.getParams().getAmount())) {
             response.setError(new JSONRPC2Error(
@@ -206,7 +183,6 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //ORDER CANCEL BO'LGAN YOKI YO'QLIGINI TEKSHRIAMIZ
         if (order.isCancelled()) {
             response.setError(new JSONRPC2Error(
                     -31099,
@@ -215,7 +191,6 @@ public class PaymentServicePayme {
             return false;
         }
 
-        //ORDER ALLAQACHON YAKUNLANAGAN BO'LSA
         if (order.isPaid()) {
             response.setError(new JSONRPC2Error(
                     -31099,
@@ -240,16 +215,13 @@ public class PaymentServicePayme {
      */
     private void createTransaction(PaycomRequestForm requestForm, JSONRPC2Response response) {
 
-        //PAYCOM DAN KELGAN ID BO'YICHA TRASACTION OLYAPMIZ
         Optional<OrderTransaction> optionalOrderTransaction = orderTransactionRepository.findByTransactionId(requestForm.getParams().getId());
 
         OrderTransaction orderTransaction;
 
-        //AGAR OrderTransaction AVVAL YARATILGAN BO'LSA
         if (optionalOrderTransaction.isPresent()) {
             orderTransaction = optionalOrderTransaction.get();
 
-            //OrderTransaction STATE IN PROGRESS DA BO'LMASA XATO QAYTARAMIZ
             if (!orderTransaction.getState().equals(TransactionState.STATE_IN_PROGRESS.getCode())) {
                 response.setError(new JSONRPC2Error(
                         -31008,
@@ -258,28 +230,21 @@ public class PaymentServicePayme {
                 return;
             }
 
-            //OrderTransaction YARATILGAN VAQTI 12 SOATDAN  KO'P BO'LSA XATO QAYTARAMIZ. MUDDATI O'TGAN ORDER
             if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime() > TIME_EXPIRED_PAYCOM_ORDER) {
                 response.setError(new JSONRPC2Error(
                         -31008,
                         "Unable to complete operation",
                         "transaction"));
 
-                //ORDER_TRANSACTION NI O'ZGARTIRIB SAQLAB QO'YAMIZ
                 orderTransaction.setReason(4);
                 orderTransaction.setState(TransactionState.STATE_CANCELED.getCode());
                 orderTransactionRepository.save(orderTransaction);
                 return;
             }
-        }
+        } else {
 
-        //OrderTransaction YARATILMAGAN BO'LSA
-        else {
-
-            //ORDER HAMMA JIHATDAN TO'G'RILIGINI TEKSHIRAMIZ
             boolean checkPerformTransaction = checkPerformTransaction(requestForm, response);
 
-            //AGAR ORDER XATO BO'LSA XATONI YUBORAMIZ
             if (!checkPerformTransaction) {
                 return;
             }
@@ -296,8 +261,6 @@ public class PaymentServicePayme {
                 return;
             }
 
-
-            //YANGI OrderTransaction
             orderTransaction = new OrderTransaction(
                     requestForm.getParams().getId(),
                     requestForm.getParams().getTime(),
@@ -307,7 +270,6 @@ public class PaymentServicePayme {
             orderTransactionRepository.save(orderTransaction);
         }
 
-        //AVVAL SAQLANGAN MUDDATO O'TMAGAN OrderTransaction YOKI YANGI SAQLANGAN OrderTransaction NING MA'LUMOTLARI QAYTARILYAPTI
         response.setResult(new ResultForm(
                 orderTransaction.getTransactionCreationTime(),
                 orderTransaction.getState(),
@@ -324,10 +286,8 @@ public class PaymentServicePayme {
      */
     private void performTransaction(PaycomRequestForm requestForm, JSONRPC2Response response) {
 
-        //PAYCOM DAN KELGAN ID BO'YICHA OrderTransaction NI QIDIRAMIZ
         Optional<OrderTransaction> optionalOrderTransaction = orderTransactionRepository.findByTransactionId(requestForm.getParams().getId());
 
-        //AGAR OrderTransaction TOPILMASA XATOLIK QAYTARAMIZ
         if (optionalOrderTransaction.isEmpty()) {
             response.setError(new JSONRPC2Error(
                     -31003,
@@ -338,17 +298,14 @@ public class PaymentServicePayme {
 
         OrderTransaction orderTransaction = optionalOrderTransaction.get();
 
-        //OrderTransaction NING STATE IN_PROGRESS(1) BO'LSA
         if (orderTransaction.getState().equals(TransactionState.STATE_IN_PROGRESS.getCode())) {
 
-            //OrderTransaction YARATILGAN VAQTI 12 SOATDAN  KO'P BO'LSA XATO QAYTARAMIZ. MUDDATI O'TGAN ORDER
             if (System.currentTimeMillis() - orderTransaction.getTransactionCreationTime() > TIME_EXPIRED_PAYCOM_ORDER) {
                 response.setError(new JSONRPC2Error(
                         -31008,
                         "Unable to complete operation",
                         "transaction"));
 
-                //ORDER_TRANSACTION NI O'ZGARTIRIB SAQLAB QO'YAMIZ
                 orderTransaction.setReason(4);
                 orderTransaction.setState(TransactionState.STATE_CANCELED.getCode());
                 orderTransactionRepository.save(orderTransaction);
@@ -359,15 +316,12 @@ public class PaymentServicePayme {
             orderTransaction.setPerformTime(System.currentTimeMillis());
             orderTransactionRepository.save(orderTransaction);
 
-            //TO'LOV BO'LDI
-
             Order order = orderTransaction.getOrder();
             order.setPaid(true);
             order.setInvoiceId(orderTransaction.getTransactionId());
             orderRepository.save(order);
         }
 
-        //OrderTransaction GA TO'LOV QILINIB YAKUNIGA YETGAN BO'LSA
         if (orderTransaction.getState().equals(TransactionState.STATE_DONE.getCode())) {
             response.setResult(new ResultForm(
                     null,
@@ -379,7 +333,6 @@ public class PaymentServicePayme {
             return;
         }
 
-        //OrderTransaction NING STATE DONE(2) BO'LMASA XATOLIK BERAMIZ
         response.setError(new JSONRPC2Error(
                 -31008,
                 "Unable to complete operation",
@@ -433,7 +386,6 @@ public class PaymentServicePayme {
 
         List<Transaction> transactions = new ArrayList<>();
 
-        //OrderTransaction LARDAN Transaction OBJECTIGA MAP QILINADI
         for (OrderTransaction orderTransaction : orderTransactionList) {
             Transaction transaction = new Transaction();
             transaction.setId(orderTransaction.getTransactionId());
@@ -452,7 +404,6 @@ public class PaymentServicePayme {
             transactions.add(transaction);
         }
 
-        //PAYCOMGA Transaction LISTI YUBORILADI
         Map<String, Object> result = new HashMap<>();
         result.put("transactions", transactions);
         response.setResult(result);
@@ -475,7 +426,7 @@ public class PaymentServicePayme {
 
         String[] split = basicAuth.split(":", 2);
 
-        if (split[0].equals("Paycom")){
+        if (split[0].equals("Paycom")) {
 
             return !split[1].equals(secretKeyTest) && !split[1].equals(secretKeyProd);
 
