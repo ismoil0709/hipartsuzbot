@@ -2,7 +2,9 @@ package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -13,10 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import uz.hiparts.hipartsuz.dto.AddressDto;
 import uz.hiparts.hipartsuz.dto.ProductDto;
-import uz.hiparts.hipartsuz.model.Branch;
-import uz.hiparts.hipartsuz.model.Order;
-import uz.hiparts.hipartsuz.model.TelegramUser;
-import uz.hiparts.hipartsuz.model.User;
+import uz.hiparts.hipartsuz.model.*;
 import uz.hiparts.hipartsuz.model.enums.Callback;
 import uz.hiparts.hipartsuz.model.enums.LangFields;
 import uz.hiparts.hipartsuz.model.enums.OrderType;
@@ -24,14 +23,12 @@ import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.repository.BranchRepository;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
-import uz.hiparts.hipartsuz.service.BotSettingsService;
-import uz.hiparts.hipartsuz.service.LangService;
-import uz.hiparts.hipartsuz.service.ProductService;
-import uz.hiparts.hipartsuz.service.TelegramUserService;
-import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.repository.OrderRepository;
+import uz.hiparts.hipartsuz.service.*;
 import uz.hiparts.hipartsuz.util.KeyboardUtils;
 import uz.hiparts.hipartsuz.util.UtilLists;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +40,7 @@ public class SendMessageService {
     private final LangService langService;
     private final UserService userService;
     private final ProductService productService;
+    private final OrderRepository orderRepository;
     private final BranchRepository branchRepository;
     private final CategoryRepository categoryRepository;
     private final BotSettingsService botSettingsService;
@@ -288,6 +286,14 @@ public class SendMessageService {
                 .build();
     }
 
+    public SendLocation sendLocation(Long chatId, Double lat, Double lon) {
+        return SendLocation.builder()
+                .chatId(chatId)
+                .latitude(lat)
+                .longitude(lon)
+                .build();
+    }
+
     public SendMessage askConfirmCode(TelegramUser telegramUser) {
         return SendMessage.builder()
                 .text(langService.getMessage(LangFields.INPUT_CODE, telegramUser.getChatId()))
@@ -325,12 +331,16 @@ public class SendMessageService {
                     .append(Math.round(p.getQuantity() * product.getPrice()))
                     .append("\n\n");
         });
+        Double totalPrice = order.getTotalPrice();
         if (order.getOrderType() == OrderType.DELIVERY) {
-            sb.append(langService.getMessage(LangFields.DELIVERY, chatId)).append("\n\n1 x 20000 = 20000\n\n");
-            sb.append(langService.getMessage(LangFields.DELIVERY_PRICE, chatId)).append(" : ").append("20000\n");
+            sb.append(langService.getMessage(LangFields.DELIVERY, chatId)).append("\n\n").append(botSettingsService.getDeliveryPrice()).append(" SUM").append("\n\n");
+            sb.append(langService.getMessage(LangFields.DELIVERY_PRICE, chatId)).append(" : ").append(botSettingsService.getDeliveryPrice()).append("\n");
+            totalPrice = totalPrice + Double.parseDouble(botSettingsService.getDeliveryPrice());
+            order.setTotalPrice(totalPrice);
         }
         sb.append(langService.getMessage(LangFields.PAYMENT_TYPE, chatId)).append(" : ").append(order.getPaymentType()).append("\n");
-        sb.append(langService.getMessage(LangFields.TOTAL_PRICE, chatId)).append(" : ").append(Math.round(order.getTotalPrice()));
+        sb.append(langService.getMessage(LangFields.TOTAL_PRICE, chatId)).append(" : ").append(Math.round(totalPrice));
+        orderRepository.save(order);
         return SendMessage.builder()
                 .text(sb.toString())
                 .chatId(chatId)
@@ -373,7 +383,7 @@ public class SendMessageService {
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_ADD_CATEGORY, chatId), Callback.ADD_CATEGORY.getCallback()),
                         KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_DELETE_CATEGORY, chatId), Callback.DELETE_CATEGORY.getCallback())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_BOT_SETTINGS, chatId), Callback.BOT_SETTINGS.getCallback())))
-                .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsuz-front.vercel.app/")))
+                .keyboardRow(List.of(KeyboardUtils.inlineButtonWithWebApp(langService.getMessage(LangFields.BUTTON_CATALOG, chatId), "https://hipartsbot.uz?lan=" + telegramUser.getLang())))
                 .keyboardRow(List.of(KeyboardUtils.inlineButton(langService.getMessage(LangFields.BUTTON_EXPORT_PRODUCTS, chatId), Callback.EXPORT_PRODUCTS.getCallback())))
                 .build();
 
@@ -808,20 +818,29 @@ public class SendMessageService {
     }
 
     public EditMessageText confirmOrder(TelegramUser telegramUser, Integer messageId, Order order) {
-        String sb = "BSD-" + order.getId() + " raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : " +
-                "\n" + "+998993310550";
+
+        String message = langService.getMessage(LangFields.ORDER_MESSAGE_BOT, telegramUser.getChatId());
+
+        message = String.format(message,
+                order.getId(),
+                botSettingsService.getOperatorNumber()
+                );
         return EditMessageText.builder()
-                .text(sb)
+                .text(message)
                 .chatId(telegramUser.getChatId())
                 .messageId(messageId)
                 .build();
     }
 
     public SendMessage confirmOrder(TelegramUser telegramUser, Order order) {
-        String sb = "BSD-" + order.getId() + " raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : " +
-                "\n" + "+998993310550";
+        String message = langService.getMessage(LangFields.ORDER_MESSAGE_BOT, telegramUser.getChatId());
+
+        message = String.format(message,
+                order.getId(),
+                botSettingsService.getOperatorNumber()
+        );
         return SendMessage.builder()
-                .text(sb)
+                .text(message)
                 .chatId(telegramUser.getChatId())
                 .build();
     }
@@ -849,6 +868,49 @@ public class SendMessageService {
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.PAYMENT_MESSAGE, chatId))
                 .replyMarkup(KeyboardUtils.inlineMarkup(button))
+                .build();
+    }
+
+    public SendMessage sendToChannel(Long chatId, Order order) {
+
+        String address = "Unknown";
+
+        if (order.getOrderType() == OrderType.PICK_UP) {
+            address = order.getBranch();
+        }
+        else {
+            address = order.getAddress();
+        }
+
+        String text = "YANGI BUYURTMA ❗️❗️❗️\n" +
+                "\n" +
+                "Order raqami : " + order.getId() + "\n" +
+                "\n" +
+                "Telefon raqam : " + order.getUser().getLastPhoneNumber() + "\n" +
+                "\n" +
+                "Yetkazib berish manzili : " + address + "\n" +
+                "\n" +
+                "Buyurtma turi  : " + (order.getOrderType() == OrderType.PICK_UP ? "Olib ketish" : "Yetkazib berish") + "\n" +
+                "\n" +
+                "To'lov turi : " + order.getPaymentType() + "\n" +
+                "\n" +
+                "To'langan : " + (order.isPaid() ? "Ha" : "Yo'q") + "\n" +
+                "\n" +
+                "Umumiy narx : " + order.getTotalPrice()  + "\n";
+
+        StringBuilder sb = new StringBuilder(text);
+
+        sb.append("\n").append("Maxsulotlar : \n");
+
+        for (ProductQuantity productQuantity : order.getProductQuantities()) {
+
+            sb.append(productQuantity.getProduct().getName()).append(" x ").append(productQuantity.getQuantity());
+            sb.append("\n");
+        }
+
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(sb.toString())
                 .build();
     }
 }

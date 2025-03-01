@@ -7,7 +7,9 @@ import uz.hiparts.hipartsuz.dto.ProductDto;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.model.Product;
+import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
 import uz.hiparts.hipartsuz.repository.ProductRepository;
+import uz.hiparts.hipartsuz.service.BotSettingsService;
 import uz.hiparts.hipartsuz.service.ProductService;
 import uz.hiparts.hipartsuz.util.Validations;
 
@@ -18,6 +20,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final BotSettingsService botSettingsService;
 
     @Override
     public ProductDto create(ProductCreateUpdateDto dto) {
@@ -25,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
                 .isActive(true)
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .price(dto.getPrice())
+                .price(dto.getPrice() * Double.parseDouble(botSettingsService.getCurrency()))
                 .imgPath(dto.getImgPath())
                 .category(dto.getCategory())
                 .discount(dto.getDiscount())

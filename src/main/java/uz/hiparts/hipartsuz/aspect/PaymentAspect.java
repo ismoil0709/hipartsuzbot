@@ -10,6 +10,7 @@ import uz.hiparts.hipartsuz.dto.json.PaycomRequestForm;
 import uz.hiparts.hipartsuz.model.Order;
 import uz.hiparts.hipartsuz.model.OrderTransaction;
 import uz.hiparts.hipartsuz.model.TelegramUser;
+import uz.hiparts.hipartsuz.model.enums.OrderType;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.OrderTransactionRepository;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
@@ -48,6 +49,11 @@ public class PaymentAspect {
 
                 botService.send(sendMessage);
 
+                botService.send(sendMessageService.sendToChannel(-1002382024601L, order));
+                if (order.getOrderType() != OrderType.PICK_UP){
+                    botService.send(sendMessageService.sendLocation(-1002382024601L, order.getLat(), order.getLon()));
+                }
+
             }
 
         }
@@ -56,40 +62,48 @@ public class PaymentAspect {
     }
 
     @After(value = "execution(* uz.hiparts.hipartsuz.service.impl.PaymentServicePayme.payWithPaycom(..)) && args(requestForm,authorization)", argNames = "requestForm,authorization")
-    public void checkOrderPaymentPayme(PaycomRequestForm requestForm,String authorization) {
+    public void checkOrderPaymentPayme(PaycomRequestForm requestForm, String authorization) {
 
         if (requestForm == null || requestForm.getParams() == null || requestForm.getParams().getId() == null) {
             return;
         }
 
-        String transactionId = requestForm.getParams().getId();
+        if (requestForm.getMethod().equals("PerformTransaction")) {
 
-        Optional<OrderTransaction> optionalOrderTransaction = orderTransactionRepository.findByTransactionId(transactionId);
+            String transactionId = requestForm.getParams().getId();
 
-        if (optionalOrderTransaction.isPresent()) {
+            Optional<OrderTransaction> optionalOrderTransaction = orderTransactionRepository.findByTransactionId(transactionId);
 
-            OrderTransaction orderTransaction = optionalOrderTransaction.get();
+            if (optionalOrderTransaction.isPresent()) {
 
-            Long orderId = orderTransaction.getOrderId();
+                OrderTransaction orderTransaction = optionalOrderTransaction.get();
 
-            Optional<Order> optionalOrder = orderRepository.findById(orderId);
+                Long orderId = orderTransaction.getOrderId();
 
-            if (optionalOrder.isPresent()) {
+                Optional<Order> optionalOrder = orderRepository.findById(orderId);
 
-                Order order = optionalOrder.get();
+                if (optionalOrder.isPresent()) {
 
-                if (!order.isCancelled() || order.isPaid()) {
+                    Order order = optionalOrder.get();
 
-                    TelegramUser telegramUser = telegramUserService.getByChatId(order.getUser().getChatId());
+                    if (!order.isCancelled() || order.isPaid()) {
 
-                    SendMessage sendMessage = sendMessageService.confirmOrder(telegramUser, order);
+                        TelegramUser telegramUser = telegramUserService.getByChatId(order.getUser().getChatId());
 
-                    botService.send(sendMessage);
+                        SendMessage sendMessage = sendMessageService.confirmOrder(telegramUser, order);
+
+                        botService.send(sendMessage);
+
+                        botService.send(sendMessageService.sendToChannel(-1002382024601L, order));
+                        if (order.getOrderType() != OrderType.PICK_UP){
+                            botService.send(sendMessageService.sendLocation(-1002382024601L, order.getLat(), order.getLon()));
+                        }
+
+                    }
 
                 }
 
             }
-
         }
 
     }

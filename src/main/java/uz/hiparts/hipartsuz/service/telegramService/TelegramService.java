@@ -401,8 +401,12 @@ public class TelegramService {
                         botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId(),paymentUrl));
                     }
                 } else {
-                    orderRepository.save(order);
-                    botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
+                    order = orderRepository.save(order);
+                    botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), order));
+                    botService.send(sendMessageService.sendToChannel(-1002382024601L, order));
+                    if (order.getOrderType() != OrderType.PICK_UP){
+                        botService.send(sendMessageService.sendLocation(-1002382024601L, order.getLat(), order.getLon()));
+                    }
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                 }
             }
