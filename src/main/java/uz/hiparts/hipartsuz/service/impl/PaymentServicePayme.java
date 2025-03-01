@@ -175,7 +175,10 @@ public class PaymentServicePayme {
         }
 
         Order order = optionalOrder.get();
-        if (!order.getTotalPrice().equals(requestForm.getParams().getAmount())) {
+
+        Double totalInTiyin = order.getTotalPrice() * 100;
+
+        if (!totalInTiyin.equals(requestForm.getParams().getAmount())) {
             response.setError(new JSONRPC2Error(
                     -31001,
                     "Wrong amount",
@@ -200,7 +203,7 @@ public class PaymentServicePayme {
         }
 
         response.setResult(new CheckPerformTransactionAllowResponse(
-                new AdditionalInfo(order.getId(), order.getTotalPrice() * 100),
+                new AdditionalInfo(order.getId(), totalInTiyin),
                 true));
         return true;
     }

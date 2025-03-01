@@ -5,10 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-//import uz.eskiz.ApplicationAutoConfiguration;
 import uz.eskiz.ApplicationAutoConfiguration;
 import uz.hiparts.hipartsuz.model.BotSettings;
 import uz.hiparts.hipartsuz.repository.BotSettingsRepository;
+import uz.hiparts.hipartsuz.service.impl.PaymentServicePayme;
 
 @SpringBootApplication(exclude = { ApplicationAutoConfiguration.class })
 @Import({ApplicationAutoConfiguration.class})
@@ -18,7 +18,7 @@ public class HipartsuzApplication {
         SpringApplication.run(HipartsuzApplication.class,args);
     }
     @Bean
-    CommandLineRunner commandLineRunner(BotSettingsRepository botSettingsRepository) {
+    CommandLineRunner commandLineRunner(BotSettingsRepository botSettingsRepository, PaymentServicePayme paymentServicePayme) {
         return args -> {
             if (botSettingsRepository.findById(1L).isEmpty()) {
                 botSettingsRepository.save(BotSettings.builder()

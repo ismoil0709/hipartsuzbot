@@ -6,7 +6,7 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
   eskiz:
     simulate: false
-    email: abduganiyev.ismoil001@gmail.com
+    email: bestboy_001@mail.ru
     password: fw0lLkWPwRclyDkSREk91DrUkrLRDrrNuBbNfmMe
     sender-name: 4546
 server:
@@ -15,11 +15,12 @@ telegram:
   url: https://hipartsbot.uz/api/v1/telegram
   token: 6412338008:AAFcXM2MXc2mCSUb3Rv3U1fP_JRY9GA77_A
 secret:
-  payme:
-    merchant_id: 676d28ce24c920882f008555
-    secret_key_test: WybcW0dYIXv78b9MIEfcsSh2HitnomIvcnD1
-    secret_key_prod: zURiP5K2HGzCix#hj3eYfbsdX#Rjc#2ENQHpx
   click:
     key: iCUfO2CfZkSg
     merchant_user_id : 44167
     service_id : 36335
+    merchant_id: 28003
+  payme:
+    merchant_id: 676d28ce24c920882f008555
+    secret_key_test: WybcW0dYIXv78b9MIEfcsSh2HitnomIvcnD1
+    secret_key_prod: zURiP5K2HGzCix#hj3eYfbsdX#Rjc#2ENQHp

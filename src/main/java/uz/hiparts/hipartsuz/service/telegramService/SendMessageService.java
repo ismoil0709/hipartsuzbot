@@ -817,6 +817,17 @@ public class SendMessageService {
                 .build();
     }
 
+    public SendMessage confirmOrder(TelegramUser telegramUser, Order order) {
+        String sb = "BSD-" + order.getId() + " raqamli buyurtma qabul qilindi!\nSavollaringiz bo'lsa operatorimizga murojaat qilishingiz mumkin : " +
+                "\n" + "+998993310550";
+        return SendMessage.builder()
+                .text(sb)
+                .chatId(telegramUser.getChatId())
+                .build();
+    }
+
+
+
 
     public SendPhoto sendProductImg(Long chatId, String imgId) {
         return SendPhoto.builder()
@@ -826,12 +837,18 @@ public class SendMessageService {
                 .build();
     }
 
-    public EditMessageText sendPaymentMessage(Long chatId, Integer messageId) {
+    public EditMessageText sendPaymentMessage(Long chatId, Integer messageId, String url) {
+
+        InlineKeyboardButton button = new InlineKeyboardButton();
+
+        button.setText("To'lash");
+        button.setUrl(url);
+
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .text(langService.getMessage(LangFields.PAYMENT_MESSAGE, chatId))
-                .replyMarkup(KeyboardUtils.inlineMarkup(KeyboardUtils.inlineButton("To'landi !", Callback.PAYED.getCallback())))
+                .replyMarkup(KeyboardUtils.inlineMarkup(button))
                 .build();
     }
 }

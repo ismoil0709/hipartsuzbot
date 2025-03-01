@@ -1,6 +1,7 @@
 package uz.hiparts.hipartsuz.service.telegramService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uz.eskiz.service.SendSmsService;
 import uz.hiparts.hipartsuz.model.Order;
@@ -30,18 +31,18 @@ public class SMSService {
 
     public void send(TelegramUser telegramUser, String phoneNumber) {
 
-        String text = "This is test from Eskiz";
+        String text = "Kodni hech kimga bermang! Hipartsuz telegram bot ga kirish uchun tasdiqlash kodi: ";
 
         int code = new Random().nextInt(9000) + 1000;
 
         phoneNumbers.put(telegramUser.getChatId(),phoneNumber);
         confirmCodes.put(telegramUser.getChatId(),code);
 
-        System.out.println(code);
+        System.out.println(text);
 
-        sendSmsService.sendSms(phoneNumber,text);
+        sendSmsService.sendSms(phoneNumber,text + code);
 
-        System.out.println(code);
+        System.out.println(text);
 
         botService.send(sendMessageService.askConfirmCode(telegramUser));
         telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_CONFIRM_CODE);

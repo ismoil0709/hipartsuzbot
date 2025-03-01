@@ -35,6 +35,8 @@ public class PaymentServiceClick {
     private Integer serviceId;
     @Value("${secret.click.merchant_user_id}")
     private String merchantUserId;
+    @Value("${secret.click.merchant_id}")
+    private String merchantId;
     @Value("${secret.click.key}")
     private String secretKey;
 
@@ -201,26 +203,39 @@ public class PaymentServiceClick {
         return response;
     }
 
-    public void sendInvoice(Order order) {
-        order = orderRepository.save(order);
-        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
-                serviceId,
-                order.getTotalPrice().floatValue(),
-                order.getPhoneNumber(),
-                order.getId().toString()
-        ), headers);
-        ClickInvoiceDto body = restTemplate.exchange(
-                CLICK_INVOICE_URL + "/invoice/create",
-                HttpMethod.POST,
-                entity,
-                ClickInvoiceDto.class
-        ).getBody();
+    public String sendInvoice(Order order) {
 
-        assert body != null;
-        System.out.println(body);
-        order.setInvoiceId(body.getInvoiceId().toString());
         order = orderRepository.save(order);
+
+       String url = "https://my.click.uz/services/pay?" +
+               "service_id=" + serviceId +
+               "&merchant_id=" + merchantId +
+               "&amount=" + order.getTotalPrice() +
+               "&transaction_param=" + order.getId();
+
+
+//        HttpEntity<ClickSendInvoiceDto> entity = new HttpEntity<>(new ClickSendInvoiceDto(
+//                serviceId,
+//                order.getTotalPrice().floatValue(),
+//                order.getPhoneNumber(),
+//                order.getId().toString()
+//        ), headers);
+//        ClickInvoiceDto body = restTemplate.exchange(
+//                CLICK_INVOICE_URL + "/invoice/create",
+//                HttpMethod.POST,
+//                entity,
+//                ClickInvoiceDto.class
+//        ).getBody();
+
+//        assert body != null;
+//        System.out.println(body);
+//        order.setInvoiceId(body.getInvoiceId().toString());
+//        order = orderRepository.save(order);
+
+
+
         UtilLists.orderMap.put(order.getUser().getChatId(), order);
+        return url;
     }
 
     public boolean checkInvoice(String invoiceId) {

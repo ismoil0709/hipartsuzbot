@@ -394,14 +394,11 @@ public class TelegramService {
                 System.out.println(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()));
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
-                        paymentServiceClick.sendInvoice(order);
-                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
+                        String paymentUrl = paymentServiceClick.sendInvoice(order);
+                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(),paymentUrl));
                     } else if (order.getPaymentType() == PaymentType.PAYME) {
                         String paymentUrl = paymentServicePayme.sendInvoice(order);
-                        botService.send(SendMessage.builder()
-                                .text(paymentUrl)
-                                .chatId(callbackQuery.getMessage().getChatId())
-                                .build());
+                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId(),paymentUrl));
                     }
                 } else {
                     orderRepository.save(order);
@@ -429,15 +426,15 @@ public class TelegramService {
                 botService.send(sendMessageService.botSettings(telegramUser, callbackQuery.getMessage().getMessageId()));
                 telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
             }
-            case PAYED -> {
-                boolean isPaid = paymentServiceClick.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getInvoiceId());
-
-                if (isPaid) {
-                    botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
-                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-                } else
-                    botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId()));
-            }
+//            case PAYED -> {
+//                boolean isPaid = paymentServiceClick.checkInvoice(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()).getInvoiceId());
+//
+//                if (isPaid) {
+//                    botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), UtilLists.orderMap.get(callbackQuery.getMessage().getChatId())));
+//                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+//                } else
+//                    botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(),));
+//            }
             case DELETE_PRODUCT -> {
                 productService.delete(UtilLists.productUpdate.get(telegramUser.getChatId()).getId());
                 telegramUserService.setState(callbackQuery.getMessage().getChatId(), UserState.DEFAULT);
