@@ -2,6 +2,7 @@ package uz.hiparts.hipartsuz.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import uz.hiparts.hipartsuz.dto.OrderDto;
 import uz.hiparts.hipartsuz.exception.InvalidArgumentException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
@@ -31,8 +32,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void create(OrderDto order) {
-        if (UtilLists.orderMap.get(order.getUserId()) == null)
-            throw new InvalidArgumentException("Please restart bot with /start");
+        if (UtilLists.orderMap.get(order.getUserId()) == null) {
+            botService.send(
+                    SendMessage.builder()
+                            .chatId(order.getUserId())
+                            .text("Please restart the bot with /start")
+                    .build());
+            return;
+        }
         Order existsOrder = UtilLists.orderMap.get(order.getUserId());
         existsOrder.setPaymentType(order.getPaymentType());
         existsOrder.setTime(order.getTime());
