@@ -22,8 +22,9 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public void createOrder(@RequestBody @Valid OrderDto order) {
+    public ResponseEntity<?> createOrder(@RequestBody @Valid OrderDto order) {
         orderService.create(order);
+        return ResponseEntity.ok("SUCCESS");
     }
 
     @GetMapping("/get/{id}")
