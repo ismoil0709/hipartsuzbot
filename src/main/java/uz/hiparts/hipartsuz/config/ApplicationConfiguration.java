@@ -73,7 +73,6 @@ public class ApplicationConfiguration {
             command = "where";
         }
         try {
-            System.out.println(command);
             Process process = new ProcessBuilder(command, "ngrok").start();
             process.waitFor();
             int exitCode = process.exitValue();

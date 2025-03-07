@@ -20,7 +20,7 @@ public class ImageController {
 
     @GetMapping("/get/{fileName}")
     public ResponseEntity<?> loadImage(@PathVariable String fileName) {
-        String directoryPath = "/home/user/product_photo";
+        String directoryPath = System.getProperty("user.home") + "/product_photo";
         Path filePath = Path.of(directoryPath, fileName);
 
         try {

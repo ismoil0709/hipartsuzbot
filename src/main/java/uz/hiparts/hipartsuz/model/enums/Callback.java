@@ -77,7 +77,6 @@ public enum Callback {
         }
     }
     public static Callback of(String data){
-        System.out.println(data);
         return map.get(data);
     }
 }

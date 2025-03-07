@@ -912,4 +912,11 @@ public class SendMessageService {
                 .text(sb.toString())
                 .build();
     }
+
+    public SendMessage cantDeleteCategory(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.INVALID_CATEGORY, telegramUser.getChatId()))
+                .build();
+    }
 }

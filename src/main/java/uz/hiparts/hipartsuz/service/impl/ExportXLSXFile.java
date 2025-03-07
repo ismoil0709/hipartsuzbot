@@ -27,7 +27,7 @@ public class ExportXLSXFile {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("Products");
 
-        String[] columns = {"ID", "Name", "Description", "Price", "Img path", "Img ID", "Category", "Is active", "Discount"};
+        String[] columns = {"ID", "Name", "Description", "Price", "Img path", "Img ID", "Category", "Discount"};
         Row headerRow = sheet.createRow(0);
 
         for (int i = 0; i < columns.length; i++) {
@@ -45,10 +45,10 @@ public class ExportXLSXFile {
             row.createCell(4).setCellValue(products.get(i).getImgPath());
             row.createCell(5).setCellValue(products.get(i).getImgId());
             row.createCell(6).setCellValue(products.get(i).getCategory().getName());
-            row.createCell(8).setCellValue(String.valueOf(products.get(i).getDiscount()));
+            row.createCell(7).setCellValue(String.valueOf(products.get(i).getDiscount()));
         }
 
-        Path UPLOAD_DIR = Path.of("/home/user/product_photo/");
+        Path UPLOAD_DIR = Path.of(System.getProperty("user.home") + "/product_photo/files");
         File uploadDir = UPLOAD_DIR.toFile();
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();

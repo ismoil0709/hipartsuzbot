@@ -6,6 +6,7 @@ import uz.hiparts.hipartsuz.exception.AlreadyExistsException;
 import uz.hiparts.hipartsuz.exception.NotFoundException;
 import uz.hiparts.hipartsuz.model.Category;
 import uz.hiparts.hipartsuz.repository.CategoryRepository;
+import uz.hiparts.hipartsuz.repository.ProductRepository;
 import uz.hiparts.hipartsuz.service.CategoryService;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public Category save(String name) {
@@ -24,11 +26,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("Category"));
-        /// todo categoryni ochirgan payt qaysidur product ga tegishli bosa categoryni ochirish mumkinmas bo'sin
+
+        if (productRepository.existsByCategory(category.getId())) {
+            return false;
+        }
+
         categoryRepository.deleteById(id);
+        return true;
     }
 
     @Override

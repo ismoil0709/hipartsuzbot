@@ -10,7 +10,7 @@ public interface CategoryService {
 
     Category save(String name);
 
-    void delete(Long id);
+    boolean delete(Long id);
 
     Category getById(Long id);
 

@@ -3,7 +3,6 @@ package uz.hiparts.hipartsuz.service.telegramService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
@@ -205,9 +204,12 @@ public class TelegramService {
             return;
         }
         if (data.startsWith(Callback.CATEGORY_DELETE.getCallback())) {
-            Long branchId = Long.parseLong(data.split("-")[1]);
+            Long categoryId = Long.parseLong(data.split("-")[1]);
 
-            categoryService.delete(branchId);
+            if (!categoryService.delete(categoryId)) {
+                botService.send(sendMessageService.cantDeleteCategory(telegramUser));
+                return;
+            }
 
             botService.send(sendMessageService.deleteMessage(telegramUser.getChatId(), callbackQuery.getMessage().getMessageId()));
             botService.send(sendMessageService.successfully(telegramUser));
@@ -391,7 +393,6 @@ public class TelegramService {
             }
             case CONFIRM_ORDER_YES -> {
                 Order order = UtilLists.orderMap.get(callbackQuery.getMessage().getChatId());
-                System.out.println(UtilLists.orderMap.get(callbackQuery.getMessage().getChatId()));
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
                         String paymentUrl = paymentServiceClick.sendInvoice(order);
@@ -858,7 +859,6 @@ public class TelegramService {
                         botService.send(sendMessageService.successfully(telegramUser));
                         telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                         botService.send(sendMessageService.adminPanel(telegramUser));
-                        botService.send(sendMessageService.sendLocation(telegramUser, branch.getAddress()));
                     }
                 } else botService.send(sendMessageService.invalidBranchAddress(telegramUser));
             }

@@ -37,10 +37,11 @@ public class BotService {
     private static final RestTemplate restTemplate = new RestTemplate();
 
     private final String token;
+    private final String url;
 
-    public BotService(@Value("${telegram.token}") String token) {
+    public BotService(@Value("${telegram.token}") String token, @Value("${telegram.url}") String url) {
         this.token = token;
-        System.out.println(this.token);
+        this.url = url;
     }
 
     public <T extends Serializable, Method extends BotApiMethod<T>> void send(Method method) {
@@ -92,9 +93,13 @@ public class BotService {
                 fileUrl = FILE_URL + token + "/" + originalFilePath;
                 byte[] fileBytes = restTemplate.getForObject(fileUrl, byte[].class);
 
+                fileUrl = "";
+
                 if (fileBytes != null) {
                     Files.write(directory.resolve(fileName), fileBytes, StandardOpenOption.CREATE);
                     System.out.println("File downloaded successfully: " + fileName);
+                    fileUrl = url.substring(0, url.indexOf("/telegram"));
+                    fileUrl = fileUrl + "/image/get/" + fileName;
                 } else {
                     System.out.println("Failed to download the file.");
                     return fileUrl;

@@ -38,11 +38,7 @@ public class SMSService {
         phoneNumbers.put(telegramUser.getChatId(),phoneNumber);
         confirmCodes.put(telegramUser.getChatId(),code);
 
-        System.out.println(text);
-
         sendSmsService.sendSms(phoneNumber,text + code);
-
-        System.out.println(text);
 
         botService.send(sendMessageService.askConfirmCode(telegramUser));
         telegramUserService.setState(telegramUser.getChatId(),UserState.INPUT_CONFIRM_CODE);
