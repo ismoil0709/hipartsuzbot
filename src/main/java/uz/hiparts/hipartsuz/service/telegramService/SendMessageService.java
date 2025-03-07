@@ -697,7 +697,6 @@ public class SendMessageService {
                 ))
                 .build();
     }
-    //TODO write method to send excel file
 
     public EditMessageText setAdminMethod(TelegramUser telegramUser, Integer messageId) {
         return EditMessageText.builder()
