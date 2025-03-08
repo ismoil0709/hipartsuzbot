@@ -28,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
                 .isActive(true)
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .price(dto.getPrice() * Double.parseDouble(botSettingsService.getCurrency()))
+                .price(dto.getPrice())
                 .imgPath(dto.getImgPath())
                 .category(dto.getCategory())
                 .discount(dto.getDiscount())
