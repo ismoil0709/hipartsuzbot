@@ -112,5 +112,7 @@ public enum LangFields {
     DELIVERY_PRICE,
     TOTAL_PRICE,
 
-    PAYMENT_MESSAGE
+    PAY,
+    PAYMENT_MESSAGE,
+    USER_NOT_FOUND,
 }

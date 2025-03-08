@@ -859,7 +859,7 @@ public class SendMessageService {
 
         InlineKeyboardButton button = new InlineKeyboardButton();
 
-        button.setText("To'lash");
+        button.setText(langService.getMessage(LangFields.PAY, chatId));
         button.setUrl(url);
 
         return EditMessageText.builder()
@@ -917,6 +917,13 @@ public class SendMessageService {
         return SendMessage.builder()
                 .chatId(telegramUser.getChatId())
                 .text(langService.getMessage(LangFields.INVALID_CATEGORY, telegramUser.getChatId()))
+                .build();
+    }
+
+    public SendMessage userNotFound(TelegramUser telegramUser) {
+        return SendMessage.builder()
+                .chatId(telegramUser.getChatId())
+                .text(langService.getMessage(LangFields.USER_NOT_FOUND,telegramUser.getChatId()))
                 .build();
     }
 }

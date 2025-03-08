@@ -755,21 +755,31 @@ public class TelegramService {
 
             case INPUT_ADMIN_USERNAME_FOR_SET -> {
                 if (message.hasText()) {
-                    String username = message.getText();
-                    userService.setAdminByUsername(username);
-                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-                    botService.send(sendMessageService.successfully(telegramUser));
-                    botService.send(sendMessageService.welcomeAdmin(telegramUser));
+                    try {
+                        String username = message.getText();
+                        userService.setAdminByUsername(username);
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                        botService.send(sendMessageService.successfully(telegramUser));
+                        botService.send(sendMessageService.welcomeAdmin(telegramUser));
+                    }catch (NotFoundException e) {
+                        botService.send(sendMessageService.userNotFound(telegramUser));
+                        return;
+                    }
                 }
             }
 
             case INPUT_ADMIN_PHONE_NUMBER_FOR_SET -> {
                 if (message.hasText()) {
-                    String phoneNumber = message.getText();
-                    userService.setAdminByPhoneNumber(phoneNumber);
-                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-                    botService.send(sendMessageService.successfully(telegramUser));
-                    botService.send(sendMessageService.welcomeAdmin(telegramUser));
+                    try {
+                        String phoneNumber = message.getText();
+                        userService.setAdminByPhoneNumber(phoneNumber);
+                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                        botService.send(sendMessageService.successfully(telegramUser));
+                        botService.send(sendMessageService.welcomeAdmin(telegramUser));
+                    }catch (NotFoundException e){
+                        botService.send(sendMessageService.userNotFound(telegramUser));
+                        return;
+                    }
                 }
             }
 
