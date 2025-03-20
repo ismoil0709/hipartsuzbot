@@ -37,15 +37,16 @@ public class UserServiceImpl implements UserService {
         if (!(phoneNumber.startsWith("+998"))){
             phoneNumber = "+998" + phoneNumber;
         }
-        Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
+        List<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
         if (byPhoneNumber.isEmpty()) {
             throw new NotFoundException("User");
         }
-        User user = byPhoneNumber.get();
-        if (!(user.getRole() == Role.ADMIN)){
-            user.setRole(Role.ADMIN);
+        for (User user : byPhoneNumber) {
+            if (!(user.getRole() == Role.ADMIN)){
+                user.setRole(Role.ADMIN);
+            }
+            userRepository.save(user);
         }
-        userRepository.save(user);
     }
 
     @Override
@@ -66,15 +67,16 @@ public class UserServiceImpl implements UserService {
         if (!(phoneNumber.startsWith("+998"))){
             phoneNumber = "+998" + phoneNumber;
         }
-        Optional<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
+        List<User> byPhoneNumber = userRepository.findByLastPhoneNumber(phoneNumber);
         if (byPhoneNumber.isEmpty()) {
             throw new NotFoundException("User");
         }
-        User user = byPhoneNumber.get();
-        if (user.getRole() == Role.ADMIN){
-            user.setRole(Role.USER);
+        for (User user : byPhoneNumber) {
+            if (user.getRole() == Role.ADMIN){
+                user.setRole(Role.USER);
+            }
+            userRepository.save(user);
         }
-        userRepository.save(user);
     }
 
     @Override
@@ -88,5 +90,16 @@ public class UserServiceImpl implements UserService {
             user.setRole(Role.USER);
         }
         userRepository.save(user);
+    }
+
+    @Override
+    public User getByUsername(String username) {
+        Optional<User> byUsername = userRepository.findByUsername(username);
+        return byUsername.orElse(null);
+    }
+
+    @Override
+    public List<User> getByPhoneNumber(String phoneNumber) {
+        return userRepository.findByLastPhoneNumber(phoneNumber);
     }
 }

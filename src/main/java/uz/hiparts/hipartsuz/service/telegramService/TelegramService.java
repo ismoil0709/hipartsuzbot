@@ -755,32 +755,48 @@ public class TelegramService {
 
             case INPUT_ADMIN_USERNAME_FOR_SET -> {
                 if (message.hasText()) {
-                    try {
-                        String username = message.getText();
+
+                    String username = message.getText();
+                    if (username.contains("@")) {
+                        username = username.substring(1);
+                    }
+                    User byUsername = userService.getByUsername(username);
+                    if (byUsername == null) {
+                        botService.send(sendMessageService.userNotFound(telegramUser));
+                    } else {
                         userService.setAdminByUsername(username);
                         telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                         botService.send(sendMessageService.successfully(telegramUser));
                         botService.send(sendMessageService.welcomeAdmin(telegramUser));
-                    }catch (NotFoundException e) {
-                        botService.send(sendMessageService.userNotFound(telegramUser));
-                        return;
                     }
                 }
             }
 
             case INPUT_ADMIN_PHONE_NUMBER_FOR_SET -> {
-                if (message.hasText()) {
-                    try {
-                        String phoneNumber = message.getText();
-                        userService.setAdminByPhoneNumber(phoneNumber);
-                        telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
-                        botService.send(sendMessageService.successfully(telegramUser));
-                        botService.send(sendMessageService.welcomeAdmin(telegramUser));
-                    }catch (NotFoundException e){
-                        botService.send(sendMessageService.userNotFound(telegramUser));
-                        return;
+                String phoneNumber = "";
+                if (message.hasContact()) {
+                    phoneNumber = message.getContact().getPhoneNumber();
+                } else if (message.hasText()) {
+                    phoneNumber = message.getText();
+                    if (!phoneNumber.contains("+")) {
+                        if (phoneNumber.length() == 9){
+                            phoneNumber = "+998".concat(phoneNumber);
+                        } else if (phoneNumber.length() == 12) {
+                            phoneNumber = "+".concat(phoneNumber);
+                        }
+                        if (!phoneNumber.matches(Regex.PHONE_NUMBER)) {
+                            botService.send(sendMessageService.invalidNumberFormat(telegramUser));
+                            return;
+                        }
                     }
-                }
+                } else botService.send(sendMessageService.invalidNumberFormat(telegramUser));
+                List<User> byPhoneNumber = userService.getByPhoneNumber(phoneNumber);
+                if (!byPhoneNumber.isEmpty()){
+                    userService.setAdminByPhoneNumber(phoneNumber);
+                    telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
+                    botService.send(sendMessageService.successfully(telegramUser));
+                    botService.send(sendMessageService.welcomeAdmin(telegramUser));
+                } else botService.send(sendMessageService.userNotFound(telegramUser));
             }
 
             case INPUT_ADMIN_USERNAME_FOR_REMOVE -> {
