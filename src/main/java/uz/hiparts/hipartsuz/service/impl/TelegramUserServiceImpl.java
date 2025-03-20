@@ -7,6 +7,8 @@ import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.repository.TelegramUserRepository;
 import uz.hiparts.hipartsuz.service.TelegramUserService;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class TelegramUserServiceImpl implements TelegramUserService {

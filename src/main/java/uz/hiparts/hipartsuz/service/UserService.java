@@ -21,4 +21,8 @@ public interface UserService {
     void removeAdminByPhoneNumber(String phoneNumber);
 
     void removeAdminByUsername(String username);
+
+    User getByUsername(String username);
+
+    List<User> getByPhoneNumber(String phoneNumber);
 }
