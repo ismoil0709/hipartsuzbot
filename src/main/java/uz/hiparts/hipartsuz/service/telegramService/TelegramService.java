@@ -3,6 +3,7 @@ package uz.hiparts.hipartsuz.service.telegramService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Location;
@@ -26,13 +27,7 @@ import uz.hiparts.hipartsuz.model.enums.Role;
 import uz.hiparts.hipartsuz.model.enums.UserState;
 import uz.hiparts.hipartsuz.repository.OrderRepository;
 import uz.hiparts.hipartsuz.repository.ProductRepository;
-import uz.hiparts.hipartsuz.service.BotSettingsService;
-import uz.hiparts.hipartsuz.service.BranchService;
-import uz.hiparts.hipartsuz.service.CategoryService;
-import uz.hiparts.hipartsuz.service.LangService;
-import uz.hiparts.hipartsuz.service.ProductService;
-import uz.hiparts.hipartsuz.service.TelegramUserService;
-import uz.hiparts.hipartsuz.service.UserService;
+import uz.hiparts.hipartsuz.service.*;
 import uz.hiparts.hipartsuz.service.impl.ExportXLSXFile;
 import uz.hiparts.hipartsuz.service.impl.PaymentServiceClick;
 import uz.hiparts.hipartsuz.service.impl.PaymentServicePayme;
@@ -63,6 +58,7 @@ public class TelegramService {
     private final TelegramUserService telegramUserService;
     private final PaymentServiceClick paymentServiceClick;
     private final PaymentServicePayme paymentServicePayme;
+    private final uz.hiparts.hipartsuz.service.Base64Service base64Service;
 
 
     public void handleMessage(Message message) {
@@ -129,6 +125,17 @@ public class TelegramService {
 
                 botService.send(sendMessageService.adminPanel(telegramUser));
 
+            } else if (text.startsWith("/encode") || text.startsWith("/decode")) {
+
+                try {
+                    String result = base64Service.base64(text);
+                    botService.send(SendMessage.builder()
+                            .text(result)
+                            .chatId(message.getChatId())
+                            .build());
+                }catch (Exception ignored){
+
+                }
             }
         }
     }
@@ -396,16 +403,16 @@ public class TelegramService {
                 if (order.getPaymentType() != PaymentType.CASH) {
                     if (order.getPaymentType() == PaymentType.CLICK) {
                         String paymentUrl = paymentServiceClick.sendInvoice(order);
-                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(),paymentUrl));
+                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), paymentUrl));
                     } else if (order.getPaymentType() == PaymentType.PAYME) {
                         String paymentUrl = paymentServicePayme.sendInvoice(order);
-                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(),callbackQuery.getMessage().getMessageId(),paymentUrl));
+                        botService.send(sendMessageService.sendPaymentMessage(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), paymentUrl));
                     }
                 } else {
                     order = orderRepository.save(order);
                     botService.send(sendMessageService.confirmOrder(telegramUser, callbackQuery.getMessage().getMessageId(), order));
                     botService.send(sendMessageService.sendToChannel(-1002382024601L, order));
-                    if (order.getOrderType() != OrderType.PICK_UP){
+                    if (order.getOrderType() != OrderType.PICK_UP) {
                         botService.send(sendMessageService.sendLocation(-1002382024601L, order.getLat(), order.getLon()));
                     }
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
@@ -779,7 +786,7 @@ public class TelegramService {
                 } else if (message.hasText()) {
                     phoneNumber = message.getText();
                     if (!phoneNumber.contains("+")) {
-                        if (phoneNumber.length() == 9){
+                        if (phoneNumber.length() == 9) {
                             phoneNumber = "+998".concat(phoneNumber);
                         } else if (phoneNumber.length() == 12) {
                             phoneNumber = "+".concat(phoneNumber);
@@ -791,7 +798,7 @@ public class TelegramService {
                     }
                 } else botService.send(sendMessageService.invalidNumberFormat(telegramUser));
                 List<User> byPhoneNumber = userService.getByPhoneNumber(phoneNumber);
-                if (!byPhoneNumber.isEmpty()){
+                if (!byPhoneNumber.isEmpty()) {
                     userService.setAdminByPhoneNumber(phoneNumber);
                     telegramUserService.setState(telegramUser.getChatId(), UserState.DEFAULT);
                     botService.send(sendMessageService.successfully(telegramUser));
@@ -902,7 +909,7 @@ public class TelegramService {
     }
 
     public boolean isOverrideCommand(Message message) {
-        return message.getText().equals("/start") || message.getText().equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))
+        return message.getText().equals("/start") || message.getText().equals("/encode") || message.getText().equals("/decode") || message.getText().equals(langService.getMessage(LangFields.BUTTON_SETTINGS, message.getChatId()))
                 || message.getText().equals(langService.getMessage(LangFields.BUTTON_NEW_ORDER, message.getChatId()))
                 || message.getText().equals("Admin");
     }
