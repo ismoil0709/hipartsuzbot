@@ -595,7 +595,7 @@ public class TelegramService {
                 if (message.hasText()) {
                     String productPrice = message.getText();
                     ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
-                    if (isNaturalNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
+                    if (isNonNegativeNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
                         double price = Double.parseDouble(productPrice);
                         double currency = Double.parseDouble(botSettingsService.getCurrency());
                         productCreateUpdateDto.setPrice(price * currency);
@@ -611,7 +611,7 @@ public class TelegramService {
             case INPUT_PRODUCT_DISCOUNT -> {
                 if (message.hasText()) {
                     String discount = message.getText();
-                    if (isNaturalNumber(discount) && discount.matches(Regex.PRICE)) {
+                    if (isNonNegativeNumber(discount) && discount.matches(Regex.PRICE)) {
                         ProductCreateUpdateDto productCreateUpdateDto = UtilLists.productCreate.get(message.getChatId());
                         productCreateUpdateDto.setDiscount(Double.valueOf(discount));
                         UtilLists.productCreate.put(message.getChatId(), productCreateUpdateDto);
@@ -700,7 +700,7 @@ public class TelegramService {
             case INPUT_NEW_PRODUCT_PRICE -> {
                 if (message.hasText()) {
                     String productPrice = message.getText();
-                    if (isNaturalNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
+                    if (isNonNegativeNumber(productPrice) && productPrice.matches(Regex.PRICE)) {
                         ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
                         productDto.setPrice(Double.parseDouble(productPrice));
                         UtilLists.productUpdate.put(message.getChatId(), productDto);
@@ -714,7 +714,7 @@ public class TelegramService {
             case INPUT_NEW_PRODUCT_DISCOUNT -> {
                 if (message.hasText()) {
                     String discount = message.getText();
-                    if (isNaturalNumber(discount)) {
+                    if (isNonNegativeNumber(discount)) {
                         ProductDto productDto = UtilLists.productUpdate.get(message.getChatId());
                         productDto.setDiscount(Double.parseDouble(discount));
                         UtilLists.productUpdate.put(message.getChatId(), productDto);
@@ -914,12 +914,13 @@ public class TelegramService {
                 || message.getText().equals("Admin");
     }
 
-    private boolean isNaturalNumber(String str) {
+    private boolean isNonNegativeNumber(String str) {
         try {
-            int num = Integer.parseInt(str);
+            double num = Double.parseDouble(str);
             return num >= 0;
         } catch (NumberFormatException e) {
             return false;
         }
     }
+
 }
